@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Play, Pause, Save } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Play, Pause, Save, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
+import GameController from '../common/GameController';
 import './SnakeGame.css';
 
 const DIRECTIONS = {
@@ -29,6 +30,7 @@ const SnakeGame = () => {
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(0);
     const [timeSpent, setTimeSpent] = useState(0);
+    const [showInstructions, setShowInstructions] = useState(true);
 
     // Generate random food position
     const generateFood = useCallback((currentSnake) => {
@@ -152,6 +154,13 @@ const SnakeGame = () => {
                         setIsPlaying(prev => !prev);
                     }
                     break;
+                case 'Escape':
+                    navigate('/games');
+                    break;
+                case 'h':
+                case 'H':
+                    setShowInstructions(prev => !prev);
+                    break;
                 default:
                     break;
             }
@@ -186,6 +195,38 @@ const SnakeGame = () => {
             initializeGame();
         }
         setIsPlaying(prev => !prev);
+    };
+
+    // GameController handlers
+    const handleControllerLeft = () => {
+        if (gameOver) return;
+        if (directionRef.current !== DIRECTIONS.RIGHT) {
+            directionRef.current = DIRECTIONS.LEFT;
+            setDirection(DIRECTIONS.LEFT);
+        }
+    };
+
+    const handleControllerRight = () => {
+        if (gameOver) return;
+        if (directionRef.current !== DIRECTIONS.LEFT) {
+            directionRef.current = DIRECTIONS.RIGHT;
+            setDirection(DIRECTIONS.RIGHT);
+        }
+    };
+
+    const handleControllerEnter = () => {
+        if (gameOver) {
+            initializeGame();
+        }
+        setIsPlaying(prev => !prev);
+    };
+
+    const handleControllerBack = () => {
+        navigate('/games');
+    };
+
+    const handleControllerHint = () => {
+        setShowInstructions(prev => !prev);
     };
 
     // Save game
@@ -308,16 +349,36 @@ const SnakeGame = () => {
                 </div>
             </div>
 
+            {/* 5-Button Game Controller */}
+            <GameController
+                onLeft={handleControllerLeft}
+                onRight={handleControllerRight}
+                onEnter={handleControllerEnter}
+                onBack={handleControllerBack}
+                onHint={handleControllerHint}
+                disabledButtons={{
+                    left: gameOver,
+                    right: gameOver,
+                    enter: false,
+                    back: false,
+                    hint: false
+                }}
+            />
+
             {/* Instructions */}
-            <div className="game-instructions">
-                <h3>Hướng dẫn</h3>
-                <ul>
-                    <li>Dùng phím mũi tên hoặc WASD để điều khiển</li>
-                    <li>Ăn 🍎 để tăng điểm và dài thêm</li>
-                    <li>Tránh va vào tường và thân rắn</li>
-                    <li>Nhấn Space để tạm dừng/tiếp tục</li>
-                </ul>
-            </div>
+            {showInstructions && (
+                <div className="game-instructions">
+                    <h3>Hướng dẫn</h3>
+                    <ul>
+                        <li>Dùng phím mũi tên hoặc WASD để điều khiển</li>
+                        <li>Hoặc dùng 5-button controller bên dưới</li>
+                        <li>Ăn 🍎 để tăng điểm và dài thêm</li>
+                        <li>Tránh va vào tường và thân rắn</li>
+                        <li>Nhấn Space/Enter để tạm dừng/tiếp tục</li>
+                        <li>Nhấn Esc để quay lại, H để ẩn/hiện hướng dẫn</li>
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };
