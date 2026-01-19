@@ -1,0 +1,135 @@
+.game-controller {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.controller-row {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+}
+
+.controller-row.main {
+    gap: var(--spacing-lg);
+}
+
+.controller-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-width: 70px;
+}
+
+.controller-btn span {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.controller-btn:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.controller-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.controller-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Direction buttons */
+.controller-btn.direction {
+    min-width: 80px;
+    min-height: 80px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+}
+
+.controller-btn.direction:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+}
+
+/* Enter button */
+.controller-btn.enter {
+    min-width: 100px;
+    min-height: 100px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.controller-btn.enter:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Back button */
+.controller-btn.back {
+    background: var(--bg-secondary);
+}
+
+.controller-btn.back:hover:not(:disabled) {
+    background: var(--color-error);
+    color: white;
+    border-color: var(--color-error);
+}
+
+/* Hint button */
+.controller-btn.hint {
+    background: var(--bg-secondary);
+}
+
+.controller-btn.hint:hover:not(:disabled) {
+    background: #f59e0b;
+    color: white;
+    border-color: #f59e0b;
+}
+
+.controller-help {
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .controller-btn {
+        min-width: 60px;
+        padding: var(--spacing-sm);
+    }
+
+    .controller-btn.direction {
+        min-width: 60px;
+        min-height: 60px;
+    }
+
+    .controller-btn.enter {
+        min-width: 80px;
+        min-height: 80px;
+    }
+
+    .controller-btn span {
+        display: none;
+    }
+}
