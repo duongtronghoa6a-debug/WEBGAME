@@ -1,0 +1,154 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import MainLayout from './layouts/MainLayout';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Games from './pages/Games';
+import './styles/globals.css';
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh'
+      }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+// Guest Route (redirect if logged in)
+const GuestRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh'
+      }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/games" replace />;
+  }
+
+  return children;
+};
+
+// App Routes
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<Home />} />
+        <Route path="login" element={
+          <GuestRoute><Login /></GuestRoute>
+        } />
+        <Route path="register" element={
+          <GuestRoute><Register /></GuestRoute>
+        } />
+        <Route path="games" element={
+          <ProtectedRoute><Games /></ProtectedRoute>
+        } />
+        {/* Placeholder routes - will be implemented */}
+        <Route path="play/:gameId" element={
+          <ProtectedRoute>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h1>🎮 Game Play</h1>
+              <p>Game component sẽ được triển khai ở đây</p>
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="friends" element={
+          <ProtectedRoute>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h1>👥 Bạn bè</h1>
+              <p>Friends component sẽ được triển khai ở đây</p>
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="messages" element={
+          <ProtectedRoute>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h1>💬 Tin nhắn</h1>
+              <p>Messages component sẽ được triển khai ở đây</p>
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="rankings" element={
+          <ProtectedRoute>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h1>🏆 Xếp hạng</h1>
+              <p>Rankings component sẽ được triển khai ở đây</p>
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="profile" element={
+          <ProtectedRoute>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h1>👤 Profile</h1>
+              <p>Profile component sẽ được triển khai ở đây</p>
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="achievements" element={
+          <ProtectedRoute>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h1>🏅 Thành tựu</h1>
+              <p>Achievements component sẽ được triển khai ở đây</p>
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="admin" element={
+          <ProtectedRoute>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h1>⚙️ Admin Dashboard</h1>
+              <p>Admin component sẽ được triển khai ở đây</p>
+            </div>
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <h1>404</h1>
+            <p>Trang không tồn tại</p>
+          </div>
+        } />
+      </Route>
+    </Routes>
+  );
+};
+
+function App() {
+  return (
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;
