@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { UserPlus, UserMinus, MessageSquare, Search, Check, X, Users as UsersIcon } from 'lucide-react';
 import api from '../services/api';
+import Pagination from '../components/common/Pagination';
 import './Friends.css';
 
 const Friends = () => {
@@ -11,6 +12,11 @@ const Friends = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [activeTab, setActiveTab] = useState('friends');
     const [loading, setLoading] = useState(true);
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalFriends, setTotalFriends] = useState(0);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchFriends();
@@ -216,6 +222,17 @@ const Friends = () => {
                                     </div>
                                 </div>
                             ))
+                        )}
+
+                        {/* Pagination */}
+                        {friends.length > 0 && (
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={Math.ceil((totalFriends || friends.length) / itemsPerPage)}
+                                onPageChange={setCurrentPage}
+                                totalItems={totalFriends || friends.length}
+                                itemsPerPage={itemsPerPage}
+                            />
                         )}
                     </div>
                 )}

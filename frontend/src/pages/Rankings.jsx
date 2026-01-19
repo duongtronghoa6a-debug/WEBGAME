@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Trophy, Medal, Star, Gamepad2, Clock, Target } from 'lucide-react';
 import api from '../services/api';
+import Pagination from '../components/common/Pagination';
 import './Rankings.css';
 
 const Rankings = () => {
@@ -8,6 +9,10 @@ const Rankings = () => {
     const [selectedGame, setSelectedGame] = useState('all');
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchGames();
@@ -153,6 +158,17 @@ const Rankings = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Pagination */}
+            {rankings.length > itemsPerPage && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(rankings.length / itemsPerPage)}
+                    onPageChange={setCurrentPage}
+                    totalItems={rankings.length}
+                    itemsPerPage={itemsPerPage}
+                />
+            )}
         </div>
     );
 };
