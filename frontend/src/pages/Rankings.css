@@ -1,0 +1,187 @@
+.rankings-page {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Filter Section */
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.filter-section label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.filter-section select {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+}
+
+/* Stats Cards */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+}
+
+.stat-card svg {
+    color: var(--color-primary);
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+
+/* Rankings Table */
+.rankings-table {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 80px 1fr 120px 100px 100px;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+}
+
+.table-body {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 120px 100px 100px;
+    padding: var(--spacing-md);
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    transition: background var(--transition-fast);
+}
+
+.table-row:hover {
+    background: var(--bg-secondary);
+}
+
+.table-row.first {
+    background: rgba(234, 179, 8, 0.1);
+}
+
+.table-row.second {
+    background: rgba(156, 163, 175, 0.1);
+}
+
+.table-row.third {
+    background: rgba(180, 83, 9, 0.1);
+}
+
+.col-rank {
+    display: flex;
+    justify-content: center;
+}
+
+.rank-number {
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+    color: var(--text-muted);
+}
+
+.col-rank .gold {
+    color: #eab308;
+}
+
+.col-rank .silver {
+    color: #9ca3af;
+}
+
+.col-rank .bronze {
+    color: #b45309;
+}
+
+.col-player {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.player-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.player-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.col-score {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.col-games,
+.col-avg {
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .table-header,
+    .table-row {
+        grid-template-columns: 60px 1fr 80px;
+    }
+
+    .col-games,
+    .col-avg {
+        display: none;
+    }
+}

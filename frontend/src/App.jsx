@@ -6,6 +6,9 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Games from './pages/Games';
+import Friends from './pages/Friends';
+import Messages from './pages/Messages';
+import Rankings from './pages/Rankings';
 import CaroGame from './components/games/CaroGame';
 import GameRouter from './components/games/GameRouter';
 import './styles/globals.css';
@@ -80,28 +83,13 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="friends" element={
-          <ProtectedRoute>
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h1>👥 Bạn bè</h1>
-              <p>Friends component sẽ được triển khai ở đây</p>
-            </div>
-          </ProtectedRoute>
+          <ProtectedRoute><Friends /></ProtectedRoute>
         } />
         <Route path="messages" element={
-          <ProtectedRoute>
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h1>💬 Tin nhắn</h1>
-              <p>Messages component sẽ được triển khai ở đây</p>
-            </div>
-          </ProtectedRoute>
+          <ProtectedRoute><Messages /></ProtectedRoute>
         } />
         <Route path="rankings" element={
-          <ProtectedRoute>
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h1>🏆 Xếp hạng</h1>
-              <p>Rankings component sẽ được triển khai ở đây</p>
-            </div>
-          </ProtectedRoute>
+          <ProtectedRoute><Rankings /></ProtectedRoute>
         } />
         <Route path="profile" element={
           <ProtectedRoute>
