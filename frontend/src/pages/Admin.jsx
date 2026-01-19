@@ -204,6 +204,50 @@ const Admin = () => {
                         </div>
                     </div>
 
+                    {/* Top Games & User Growth */}
+                    <div className="dashboard-charts">
+                        <div className="chart-card">
+                            <h3>🎮 Top Games được chơi nhiều nhất</h3>
+                            <div className="top-games-list">
+                                {games.slice(0, 5).map((game, idx) => (
+                                    <div key={game.id} className="top-game-item">
+                                        <span className={`rank rank-${idx + 1}`}>{idx + 1}</span>
+                                        <span className="game-name">{game.name}</span>
+                                        <div className="game-bar">
+                                            <div
+                                                className="game-bar-fill"
+                                                style={{ width: `${Math.min(100, (game.play_count / 500) * 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className="play-count">{game.play_count}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="chart-card">
+                            <h3>📈 Thống kê người dùng</h3>
+                            <div className="user-stats-grid">
+                                <div className="user-stat-box">
+                                    <span className="stat-number">{users.filter(u => u.status === 'active').length}</span>
+                                    <span className="stat-name">Active</span>
+                                </div>
+                                <div className="user-stat-box banned">
+                                    <span className="stat-number">{users.filter(u => u.status === 'banned').length}</span>
+                                    <span className="stat-name">Banned</span>
+                                </div>
+                                <div className="user-stat-box admin">
+                                    <span className="stat-number">{users.filter(u => u.role === 'admin').length}</span>
+                                    <span className="stat-name">Admins</span>
+                                </div>
+                                <div className="user-stat-box">
+                                    <span className="stat-number">{users.filter(u => u.role === 'player').length}</span>
+                                    <span className="stat-name">Players</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="recent-section">
                         <h3>📊 Hoạt động gần đây</h3>
                         <div className="activity-list">
@@ -221,6 +265,16 @@ const Admin = () => {
                                 <span className="activity-icon">🏆</span>
                                 <span className="activity-text">pro_gamer đạt 10000 điểm</span>
                                 <span className="activity-time">30 phút trước</span>
+                            </div>
+                            <div className="activity-item">
+                                <span className="activity-icon">💬</span>
+                                <span className="activity-text">player2 gửi tin nhắn cho player1</span>
+                                <span className="activity-time">45 phút trước</span>
+                            </div>
+                            <div className="activity-item">
+                                <span className="activity-icon">⭐</span>
+                                <span className="activity-text">gamer_pro đánh giá 5* cho Snake</span>
+                                <span className="activity-time">1 giờ trước</span>
                             </div>
                         </div>
                     </div>

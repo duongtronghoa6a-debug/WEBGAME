@@ -19,7 +19,7 @@ app.use(helmet());
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
         ? process.env.FRONTEND_URL
-        : ['http://localhost:3000', 'http://localhost:5173'],
+        : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true
 }));
 
@@ -41,8 +41,8 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// API Documentation (protected with API key)
-app.use('/api-docs', apiKeyAuth, swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+// API Documentation (public access for easy testing)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Board Game API Documentation'
 }));

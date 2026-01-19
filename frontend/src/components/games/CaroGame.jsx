@@ -60,18 +60,23 @@ const CaroGame = () => {
 
             switch (e.key) {
                 case 'ArrowLeft':
+                    e.preventDefault();
                     setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
                     break;
                 case 'ArrowRight':
+                    e.preventDefault();
                     setCursor(prev => ({ ...prev, col: Math.min(boardSize.cols - 1, prev.col + 1) }));
                     break;
                 case 'ArrowUp':
+                    e.preventDefault();
                     setCursor(prev => ({ ...prev, row: Math.max(0, prev.row - 1) }));
                     break;
                 case 'ArrowDown':
+                    e.preventDefault();
                     setCursor(prev => ({ ...prev, row: Math.min(boardSize.rows - 1, prev.row + 1) }));
                     break;
                 case 'Enter':
+                    e.preventDefault();
                     handleCellClick(cursor.row, cursor.col);
                     break;
                 case 'Escape':
