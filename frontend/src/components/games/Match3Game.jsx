@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Save, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
+import GameController from '../common/GameController';
 import './Match3Game.css';
 
 const CANDY_TYPES = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍒'];
@@ -19,6 +20,8 @@ const Match3Game = () => {
     const [gameOver, setGameOver] = useState(false);
     const [combo, setCombo] = useState(0);
     const [timeSpent, setTimeSpent] = useState(0);
+    const [cursor, setCursor] = useState({ row: 0, col: 0 });
+    const [showInstructions, setShowInstructions] = useState(true);
 
     // Initialize board
     useEffect(() => {
@@ -40,6 +43,46 @@ const Match3Game = () => {
             setGameOver(true);
         }
     }, [moves, isAnimating]);
+
+    // Keyboard controls
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (isAnimating || gameOver) return;
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    setCursor(prev => ({ ...prev, col: Math.min(BOARD_SIZE - 1, prev.col + 1) }));
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    setCursor(prev => ({ ...prev, row: Math.max(0, prev.row - 1) }));
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    setCursor(prev => ({ ...prev, row: Math.min(BOARD_SIZE - 1, prev.row + 1) }));
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    handleCellClick(cursor.row, cursor.col);
+                    break;
+                case 'Escape':
+                    navigate('/games');
+                    break;
+                case 'h':
+                case 'H':
+                    setShowInstructions(prev => !prev);
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [cursor, isAnimating, gameOver, navigate]);
 
     // Generate random candy (avoiding initial matches)
     const generateCandy = useCallback((excludeTypes = []) => {
@@ -238,6 +281,30 @@ const Match3Game = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    // GameController handlers
+    const handleControllerLeft = () => {
+        if (isAnimating || gameOver) return;
+        setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
+    };
+
+    const handleControllerRight = () => {
+        if (isAnimating || gameOver) return;
+        setCursor(prev => ({ ...prev, col: Math.min(BOARD_SIZE - 1, prev.col + 1) }));
+    };
+
+    const handleControllerEnter = () => {
+        if (isAnimating || gameOver) return;
+        handleCellClick(cursor.row, cursor.col);
+    };
+
+    const handleControllerBack = () => {
+        navigate('/games');
+    };
+
+    const handleControllerHint = () => {
+        setShowInstructions(prev => !prev);
+    };
+
     return (
         <div className="match3-game">
             {/* Header */}
@@ -289,11 +356,12 @@ const Match3Game = () => {
                     {board.map((row, rowIndex) =>
                         row.map((candy, colIndex) => {
                             const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === colIndex;
+                            const isCursor = cursor.row === rowIndex && cursor.col === colIndex;
 
                             return (
                                 <div
                                     key={`${rowIndex}-${colIndex}`}
-                                    className={`cell candy-cell ${isSelected ? 'selected' : ''} ${candy === null ? 'empty' : ''}`}
+                                    className={`cell candy-cell ${isSelected ? 'selected' : ''} ${candy === null ? 'empty' : ''} ${isCursor ? 'cursor' : ''}`}
                                     onClick={() => handleCellClick(rowIndex, colIndex)}
                                 >
                                     {candy}
@@ -304,16 +372,35 @@ const Match3Game = () => {
                 </div>
             </div>
 
+            {/* 5-Button Game Controller */}
+            <GameController
+                onLeft={handleControllerLeft}
+                onRight={handleControllerRight}
+                onEnter={handleControllerEnter}
+                onBack={handleControllerBack}
+                onHint={handleControllerHint}
+                disabledButtons={{
+                    left: isAnimating || gameOver,
+                    right: isAnimating || gameOver,
+                    enter: isAnimating || gameOver,
+                    back: false,
+                    hint: false
+                }}
+            />
+
             {/* Instructions */}
-            <div className="game-instructions">
-                <h3>Hướng dẫn</h3>
-                <ul>
-                    <li>Click để chọn kẹo, click kẹo cạnh để đổi chỗ</li>
-                    <li>Xếp 3 kẹo cùng loại theo hàng/cột để ghi điểm</li>
-                    <li>Combo liên tiếp sẽ nhân điểm</li>
-                    <li>Hoàn thành trước khi hết lượt!</li>
-                </ul>
-            </div>
+            {showInstructions && (
+                <div className="game-instructions">
+                    <h3>Hướng dẫn</h3>
+                    <ul>
+                        <li>Dùng phím mũi tên hoặc 5-button để di chuyển cursor</li>
+                        <li>Nhấn Enter để chọn kẹo, nhấn lần nữa để đổi chỗ</li>
+                        <li>Xếp 3 kẹo cùng loại theo hàng/cột để ghi điểm</li>
+                        <li>Combo liên tiếp sẽ nhân điểm</li>
+                        <li>Nhấn Esc để quay lại, H để ẩn/hiện hướng dẫn</li>
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };

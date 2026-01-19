@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Save, Eye, EyeOff, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
+import GameController from '../common/GameController';
 import './MemoryGame.css';
 
 const CARD_SYMBOLS = ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🦁', '🐸', '🐵', '🐔', '🦄'];
@@ -22,6 +23,8 @@ const MemoryGame = () => {
     const [timeSpent, setTimeSpent] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
+    const [cursor, setCursor] = useState(0);
+    const [showInstructions, setShowInstructions] = useState(true);
 
     // Initialize game
     useEffect(() => {
@@ -45,6 +48,50 @@ const MemoryGame = () => {
             setIsPlaying(false);
         }
     }, [matchedPairs, gridSize]);
+
+    // Keyboard controls
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (isLocked || showPreview) return;
+
+            const totalCards = gridSize * gridSize;
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    setCursor(prev => Math.max(0, prev - 1));
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    setCursor(prev => Math.min(totalCards - 1, prev + 1));
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    setCursor(prev => Math.max(0, prev - gridSize));
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    setCursor(prev => Math.min(totalCards - 1, prev + gridSize));
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (cards[cursor]) {
+                        handleCardClick(cards[cursor].id);
+                    }
+                    break;
+                case 'Escape':
+                    navigate('/games');
+                    break;
+                case 'h':
+                case 'H':
+                    setShowInstructions(prev => !prev);
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [cursor, gridSize, cards, isLocked, showPreview, navigate]);
 
     // Initialize game
     const initializeGame = useCallback(() => {
@@ -154,6 +201,33 @@ const MemoryGame = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    // GameController handlers
+    const handleControllerLeft = () => {
+        if (isLocked || showPreview) return;
+        setCursor(prev => Math.max(0, prev - 1));
+    };
+
+    const handleControllerRight = () => {
+        if (isLocked || showPreview) return;
+        const totalCards = gridSize * gridSize;
+        setCursor(prev => Math.min(totalCards - 1, prev + 1));
+    };
+
+    const handleControllerEnter = () => {
+        if (isLocked || showPreview || gameOver) return;
+        if (cards[cursor]) {
+            handleCardClick(cards[cursor].id);
+        }
+    };
+
+    const handleControllerBack = () => {
+        navigate('/games');
+    };
+
+    const handleControllerHint = () => {
+        setShowInstructions(prev => !prev);
+    };
+
     return (
         <div className="memory-game">
             {/* Header */}
@@ -220,13 +294,14 @@ const MemoryGame = () => {
                         gridTemplateRows: `repeat(${gridSize}, 1fr)`
                     }}
                 >
-                    {cards.map(card => {
+                    {cards.map((card, index) => {
                         const isFlipped = flippedCards.includes(card.id) || card.isMatched || showPreview;
+                        const isCursor = cursor === index;
 
                         return (
                             <div
                                 key={card.id}
-                                className={`memory-card ${isFlipped ? 'flipped' : ''} ${card.isMatched ? 'matched' : ''}`}
+                                className={`memory-card ${isFlipped ? 'flipped' : ''} ${card.isMatched ? 'matched' : ''} ${isCursor ? 'cursor' : ''}`}
                                 onClick={() => handleCardClick(card.id)}
                             >
                                 <div className="card-inner">
@@ -239,16 +314,35 @@ const MemoryGame = () => {
                 </div>
             </div>
 
+            {/* 5-Button Game Controller */}
+            <GameController
+                onLeft={handleControllerLeft}
+                onRight={handleControllerRight}
+                onEnter={handleControllerEnter}
+                onBack={handleControllerBack}
+                onHint={handleControllerHint}
+                disabledButtons={{
+                    left: isLocked || showPreview,
+                    right: isLocked || showPreview,
+                    enter: isLocked || showPreview || gameOver,
+                    back: false,
+                    hint: false
+                }}
+            />
+
             {/* Instructions */}
-            <div className="game-instructions">
-                <h3>Hướng dẫn</h3>
-                <ul>
-                    <li>Click vào thẻ để lật mở</li>
-                    <li>Tìm 2 thẻ có hình giống nhau</li>
-                    <li>Cố gắng hoàn thành với ít lượt nhất</li>
-                    <li>Dùng "Xem trước" để ghi nhớ trước khi chơi</li>
-                </ul>
-            </div>
+            {showInstructions && (
+                <div className="game-instructions">
+                    <h3>Hướng dẫn</h3>
+                    <ul>
+                        <li>Dùng phím mũi tên hoặc 5-button để di chuyển cursor</li>
+                        <li>Nhấn Enter để lật thẻ</li>
+                        <li>Tìm 2 thẻ có hình giống nhau</li>
+                        <li>Cố gắng hoàn thành với ít lượt nhất</li>
+                        <li>Nhấn Esc để quay lại, H để ẩn/hiện hướng dẫn</li>
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };

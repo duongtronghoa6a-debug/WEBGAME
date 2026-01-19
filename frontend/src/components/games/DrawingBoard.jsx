@@ -2,8 +2,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, RotateCcw, Download, Trash2,
-    Pencil, Eraser, Square, Circle, Minus
+    Pencil, Eraser, Square, Circle, Minus, Lightbulb
 } from 'lucide-react';
+import GameController from '../common/GameController';
 import './DrawingBoard.css';
 
 const COLORS = [
@@ -26,6 +27,9 @@ const DrawingBoard = () => {
     const [startPos, setStartPos] = useState(null);
     const [history, setHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
+    const [showInstructions, setShowInstructions] = useState(true);
+
+    const TOOLS = ['pencil', 'eraser', 'line', 'rectangle', 'circle'];
 
     // Initialize canvas
     useEffect(() => {
@@ -46,6 +50,44 @@ const DrawingBoard = () => {
         // Save initial state
         saveToHistory();
     }, []);
+
+    // Keyboard controls
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            switch (e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    undo();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    // Cycle through tools
+                    setTool(prev => {
+                        const currentIndex = TOOLS.indexOf(prev);
+                        return TOOLS[(currentIndex + 1) % TOOLS.length];
+                    });
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    downloadImage();
+                    break;
+                case 'Escape':
+                    navigate('/games');
+                    break;
+                case 'h':
+                case 'H':
+                    setShowInstructions(prev => !prev);
+                    break;
+                case 'c':
+                case 'C':
+                    clearCanvas();
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [navigate]);
 
     // Save to history
     const saveToHistory = useCallback(() => {
@@ -184,6 +226,31 @@ const DrawingBoard = () => {
         link.click();
     };
 
+    // GameController handlers
+    const handleControllerLeft = () => {
+        undo();
+    };
+
+    const handleControllerRight = () => {
+        // Cycle through tools
+        setTool(prev => {
+            const currentIndex = TOOLS.indexOf(prev);
+            return TOOLS[(currentIndex + 1) % TOOLS.length];
+        });
+    };
+
+    const handleControllerEnter = () => {
+        downloadImage();
+    };
+
+    const handleControllerBack = () => {
+        navigate('/games');
+    };
+
+    const handleControllerHint = () => {
+        setShowInstructions(prev => !prev);
+    };
+
     return (
         <div className="drawing-board">
             {/* Header */}
@@ -299,16 +366,35 @@ const DrawingBoard = () => {
                 />
             </div>
 
+            {/* 5-Button Game Controller */}
+            <GameController
+                onLeft={handleControllerLeft}
+                onRight={handleControllerRight}
+                onEnter={handleControllerEnter}
+                onBack={handleControllerBack}
+                onHint={handleControllerHint}
+                disabledButtons={{
+                    left: historyIndex <= 0,
+                    right: false,
+                    enter: false,
+                    back: false,
+                    hint: false
+                }}
+            />
+
             {/* Instructions */}
-            <div className="game-instructions">
-                <h3>Hướng dẫn</h3>
-                <ul>
-                    <li>Chọn công cụ vẽ (bút, tẩy, hình)</li>
-                    <li>Chọn màu sắc và kích thước nét</li>
-                    <li>Vẽ trên canvas bằng chuột hoặc touch</li>
-                    <li>Hoàn tác hoặc tải xuống bản vẽ</li>
-                </ul>
-            </div>
+            {showInstructions && (
+                <div className="game-instructions">
+                    <h3>Hướng dẫn</h3>
+                    <ul>
+                        <li>Chọn công cụ vẽ (bút, tẩy, hình) hoặc nhấn → để chuyển tool</li>
+                        <li>Chọn màu sắc và kích thước nét</li>
+                        <li>Vẽ trên canvas bằng chuột hoặc touch</li>
+                        <li>Nhấn ← để undo, Enter để tải xuống</li>
+                        <li>Nhấn Esc để quay lại, H để ẩn/hiện hướng dẫn</li>
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };
