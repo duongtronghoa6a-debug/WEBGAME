@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import CaroGame from './CaroGame';
 import SnakeGame from './SnakeGame';
+import Match3Game from './Match3Game';
 
 // Map gameId to game component
 const gameComponents = {
@@ -8,6 +9,7 @@ const gameComponents = {
     2: CaroGame,      // Caro Hàng 4 (reuse with different config)
     3: CaroGame,      // Tic-Tac-Toe (reuse with 3x3 config)
     4: SnakeGame,     // Rắn Săn Mồi
+    5: Match3Game,    // Ghép Hàng 3
     // More games will be added
 };
 

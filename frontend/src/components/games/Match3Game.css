@@ -1,0 +1,68 @@
+.match3-game {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.match3-board {
+    aspect-ratio: 1;
+    max-width: 400px;
+    margin: 0 auto;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 2px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    padding: 4px;
+    border-radius: var(--radius-lg);
+}
+
+.candy-cell {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.candy-cell:hover {
+    transform: scale(1.1);
+    z-index: 1;
+}
+
+.candy-cell.selected {
+    background: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 3px var(--color-primary);
+    transform: scale(1.1);
+    z-index: 2;
+}
+
+.candy-cell.empty {
+    opacity: 0;
+    transform: scale(0);
+}
+
+.combo-display {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-full);
+    font-weight: bold;
+    animation: pulse 0.5s ease infinite alternate;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .match3-board {
+        max-width: 320px;
+    }
+
+    .candy-cell {
+        font-size: 18px;
+    }
+}
