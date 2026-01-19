@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Games from './pages/Games';
 import CaroGame from './components/games/CaroGame';
+import GameRouter from './components/games/GameRouter';
 import './styles/globals.css';
 
 // Protected Route Component
@@ -75,7 +76,7 @@ const AppRoutes = () => {
         {/* Game routes */}
         <Route path="play/:gameId" element={
           <ProtectedRoute>
-            <CaroGame />
+            <GameRouter />
           </ProtectedRoute>
         } />
         <Route path="friends" element={

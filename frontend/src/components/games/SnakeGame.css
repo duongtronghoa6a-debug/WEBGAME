@@ -1,0 +1,112 @@
+.snake-game {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.snake-board {
+    aspect-ratio: 1;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.snake-board .cell {
+    width: 100%;
+    height: 100%;
+    background: var(--board-cell);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: background 0.1s ease;
+}
+
+.snake-board .cell.snake-head {
+    background: var(--color-success);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.snake-board .cell.snake-body {
+    background: var(--color-primary);
+    border-radius: 2px;
+}
+
+.snake-board .cell.food {
+    font-size: 16px;
+    animation: pulse 0.5s ease infinite alternate;
+}
+
+/* Mobile controls */
+.mobile-controls {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-lg);
+}
+
+.control-row {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.direction-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.direction-btn:active {
+    background: var(--color-primary);
+    color: white;
+    transform: scale(0.95);
+}
+
+.direction-btn.center {
+    background: var(--color-primary);
+    color: white;
+}
+
+/* Show mobile controls on touch devices */
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: flex;
+    }
+
+    .snake-board {
+        max-width: 350px;
+    }
+
+    .snake-board .cell {
+        font-size: 10px;
+    }
+
+    .snake-board .cell.snake-head {
+        font-size: 12px;
+    }
+
+    .snake-board .cell.food {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .snake-board {
+        max-width: 280px;
+    }
+
+    .direction-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+}
