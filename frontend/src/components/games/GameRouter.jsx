@@ -3,6 +3,7 @@ import CaroGame from './CaroGame';
 import SnakeGame from './SnakeGame';
 import Match3Game from './Match3Game';
 import MemoryGame from './MemoryGame';
+import DrawingBoard from './DrawingBoard';
 
 // Map gameId to game component
 const gameComponents = {
@@ -12,6 +13,7 @@ const gameComponents = {
     4: SnakeGame,     // Rắn Săn Mồi
     5: Match3Game,    // Ghép Hàng 3
     6: MemoryGame,    // Cờ Trí Nhớ
+    7: DrawingBoard,  // Bảng Vẽ
     // More games will be added
 };
 
