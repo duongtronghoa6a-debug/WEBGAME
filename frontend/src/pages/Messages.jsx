@@ -145,7 +145,7 @@ const Messages = () => {
                                 </div>
                                 <div className="conv-info">
                                     <span className="conv-name">{conv.user.username}</span>
-                                    <span className="conv-last">{conv.last_message}</span>
+                                    <span className="conv-last">{typeof conv.last_message === 'string' ? conv.last_message : conv.last_message?.content || ''}</span>
                                 </div>
                                 {conv.unread > 0 && (
                                     <span className="unread-badge">{conv.unread}</span>
@@ -173,12 +173,14 @@ const Messages = () => {
                         </div>
 
                         <div className="messages-container">
-                            {messages.map(msg => (
+                            {messages.map((msg, index) => (
                                 <div
-                                    key={msg.id}
-                                    className={`message ${msg.sender_id === user?.id ? 'sent' : 'received'}`}
+                                    key={msg.id || index}
+                                    className={`message ${msg.sender_id === user?.id || msg.is_mine ? 'sent' : 'received'}`}
                                 >
-                                    <div className="message-content">{msg.content}</div>
+                                    <div className="message-content">
+                                        {typeof msg.content === 'string' ? msg.content : msg.content?.text || JSON.stringify(msg.content)}
+                                    </div>
                                     <span className="message-time">{formatTime(msg.created_at)}</span>
                                 </div>
                             ))}
