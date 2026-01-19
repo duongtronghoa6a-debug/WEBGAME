@@ -9,6 +9,7 @@ import Games from './pages/Games';
 import Friends from './pages/Friends';
 import Messages from './pages/Messages';
 import Rankings from './pages/Rankings';
+import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import CaroGame from './components/games/CaroGame';
 import GameRouter from './components/games/GameRouter';
@@ -93,12 +94,7 @@ const AppRoutes = () => {
           <ProtectedRoute><Rankings /></ProtectedRoute>
         } />
         <Route path="profile" element={
-          <ProtectedRoute>
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h1>👤 Profile</h1>
-              <p>Profile component sẽ được triển khai ở đây</p>
-            </div>
-          </ProtectedRoute>
+          <ProtectedRoute><Profile /></ProtectedRoute>
         } />
         <Route path="achievements" element={
           <ProtectedRoute>
