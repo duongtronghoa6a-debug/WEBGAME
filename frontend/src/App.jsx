@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Games from './pages/Games';
+import CaroGame from './components/games/CaroGame';
 import './styles/globals.css';
 
 // Protected Route Component
@@ -71,13 +72,10 @@ const AppRoutes = () => {
         <Route path="games" element={
           <ProtectedRoute><Games /></ProtectedRoute>
         } />
-        {/* Placeholder routes - will be implemented */}
+        {/* Game routes */}
         <Route path="play/:gameId" element={
           <ProtectedRoute>
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h1>🎮 Game Play</h1>
-              <p>Game component sẽ được triển khai ở đây</p>
-            </div>
+            <CaroGame />
           </ProtectedRoute>
         } />
         <Route path="friends" element={

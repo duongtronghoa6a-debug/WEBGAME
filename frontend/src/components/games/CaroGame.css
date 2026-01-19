@@ -1,0 +1,258 @@
+.caro-game {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+}
+
+.back-btn:hover {
+    background: var(--border-color);
+}
+
+.game-header h1 {
+    font-size: var(--font-size-xl);
+    margin: 0;
+}
+
+.game-stats {
+    display: flex;
+    gap: var(--spacing-lg);
+}
+
+.stat {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.game-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.ai-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.ai-selector label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.ai-selector select {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.control-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.control-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+}
+
+.control-btn:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: white;
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.game-status {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.status-message {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+.status-message.win {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--color-success);
+}
+
+.status-message.lose {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--color-error);
+}
+
+.board-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-lg);
+    overflow: auto;
+}
+
+.game-board {
+    display: grid;
+    gap: 1px;
+    background: var(--board-border);
+    border: 2px solid var(--board-border);
+    border-radius: var(--radius-md);
+    padding: 2px;
+    max-width: 100%;
+}
+
+.cell {
+    width: 32px;
+    height: 32px;
+    background: var(--board-cell);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.cell:hover {
+    background: var(--board-cell-hover);
+}
+
+.cell.player-x .x {
+    color: var(--player-x);
+}
+
+.cell.player-o .o {
+    color: var(--player-o);
+}
+
+.cell.winning {
+    background: rgba(34, 197, 94, 0.3);
+    animation: pulse 0.5s ease infinite alternate;
+}
+
+.cell.hint {
+    background: rgba(251, 191, 36, 0.4);
+    animation: blink 0.5s ease infinite alternate;
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes blink {
+    from {
+        opacity: 0.5;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.x {
+    font-size: 18px;
+}
+
+.o {
+    font-size: 22px;
+}
+
+.game-instructions {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+}
+
+.game-instructions h3 {
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.game-instructions ul {
+    margin: 0;
+    padding-left: var(--spacing-lg);
+    color: var(--text-secondary);
+}
+
+.game-instructions li {
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .game-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .game-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .control-buttons {
+        justify-content: center;
+    }
+
+    .cell {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+    }
+
+    .x {
+        font-size: 12px;
+    }
+
+    .o {
+        font-size: 16px;
+    }
+}
