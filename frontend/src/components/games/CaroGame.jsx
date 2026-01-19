@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Save, Lightbulb, Play, Pause } from 'lucide-react';
 import api from '../../services/api';
+import GameController from '../common/GameController';
 import './CaroGame.css';
 
 // AI Levels
@@ -18,6 +19,9 @@ const CaroGame = () => {
     // Game config
     const [boardSize, setBoardSize] = useState({ rows: 15, cols: 15 });
     const [winCondition, setWinCondition] = useState(5);
+
+    // Cursor for 5-button controller
+    const [cursor, setCursor] = useState({ row: 7, col: 7 });
 
     // Game state
     const [board, setBoard] = useState([]);
@@ -49,6 +53,47 @@ const CaroGame = () => {
         return () => clearInterval(interval);
     }, [isPlaying, gameOver]);
 
+    // Keyboard controls
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (gameOver || isAiThinking || currentPlayer !== 1) return;
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                    setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
+                    break;
+                case 'ArrowRight':
+                    setCursor(prev => ({ ...prev, col: Math.min(boardSize.cols - 1, prev.col + 1) }));
+                    break;
+                case 'ArrowUp':
+                    setCursor(prev => ({ ...prev, row: Math.max(0, prev.row - 1) }));
+                    break;
+                case 'ArrowDown':
+                    setCursor(prev => ({ ...prev, row: Math.min(boardSize.rows - 1, prev.row + 1) }));
+                    break;
+                case 'Enter':
+                    handleCellClick(cursor.row, cursor.col);
+                    break;
+                case 'Escape':
+                    navigate('/games');
+                    break;
+                case 'h':
+                case 'H':
+                    showHint();
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [cursor, gameOver, isAiThinking, currentPlayer, boardSize]);
+
+    // GameController handlers
+    const handleLeft = () => setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
+    const handleRight = () => setCursor(prev => ({ ...prev, col: Math.min(boardSize.cols - 1, prev.col + 1) }));
+    const handleEnter = () => handleCellClick(cursor.row, cursor.col);
+    const handleBack = () => navigate('/games');
+
     const initializeGame = () => {
         const newBoard = Array(boardSize.rows).fill(null).map(() =>
             Array(boardSize.cols).fill(0)
@@ -62,6 +107,7 @@ const CaroGame = () => {
         setTimeSpent(0);
         setIsPlaying(true);
         setHint(null);
+        setCursor({ row: Math.floor(boardSize.rows / 2), col: Math.floor(boardSize.cols / 2) });
     };
 
     // Check winner
@@ -387,11 +433,12 @@ const CaroGame = () => {
                         row.map((cell, colIndex) => {
                             const isWinning = winningCells.some(([r, c]) => r === rowIndex && c === colIndex);
                             const isHint = hint && hint.row === rowIndex && hint.col === colIndex;
+                            const isCursor = cursor.row === rowIndex && cursor.col === colIndex;
 
                             return (
                                 <div
                                     key={`${rowIndex}-${colIndex}`}
-                                    className={`cell ${cell === 1 ? 'player-x' : cell === 2 ? 'player-o' : ''} ${isWinning ? 'winning' : ''} ${isHint ? 'hint' : ''}`}
+                                    className={`cell ${cell === 1 ? 'player-x' : cell === 2 ? 'player-o' : ''} ${isWinning ? 'winning' : ''} ${isHint ? 'hint' : ''} ${isCursor ? 'cursor' : ''}`}
                                     onClick={() => handleCellClick(rowIndex, colIndex)}
                                 >
                                     {cell === 1 && <span className="x">✕</span>}
@@ -403,13 +450,27 @@ const CaroGame = () => {
                 </div>
             </div>
 
+            {/* 5-Button Game Controller */}
+            <GameController
+                onLeft={handleLeft}
+                onRight={handleRight}
+                onEnter={handleEnter}
+                onBack={handleBack}
+                onHint={showHint}
+                disabledButtons={{
+                    enter: gameOver || currentPlayer !== 1 || isAiThinking,
+                    hint: gameOver || currentPlayer !== 1
+                }}
+            />
+
             {/* Instructions */}
             <div className="game-instructions">
                 <h3>Hướng dẫn</h3>
                 <ul>
-                    <li>Click vào ô trống để đặt quân X</li>
+                    <li>Dùng nút ← → để di chuyển cursor, Enter để đặt quân</li>
+                    <li>Hoặc click trực tiếp vào ô trống</li>
                     <li>Xếp {winCondition} quân liên tiếp (ngang/dọc/chéo) để thắng</li>
-                    <li>Dùng nút Gợi ý nếu cần trợ giúp</li>
+                    <li>Dùng nút Hint nếu cần gợi ý</li>
                 </ul>
             </div>
         </div>

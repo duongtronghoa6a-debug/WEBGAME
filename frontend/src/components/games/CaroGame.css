@@ -176,6 +176,12 @@
     animation: blink 0.5s ease infinite alternate;
 }
 
+.cell.cursor {
+    outline: 3px solid var(--color-primary);
+    outline-offset: -2px;
+    z-index: 1;
+}
+
 @keyframes pulse {
     from {
         transform: scale(1);
