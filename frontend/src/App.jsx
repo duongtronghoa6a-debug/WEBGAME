@@ -9,6 +9,7 @@ import Games from './pages/Games';
 import Friends from './pages/Friends';
 import Messages from './pages/Messages';
 import Rankings from './pages/Rankings';
+import Admin from './pages/Admin';
 import CaroGame from './components/games/CaroGame';
 import GameRouter from './components/games/GameRouter';
 import './styles/globals.css';
@@ -108,12 +109,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="admin" element={
-          <ProtectedRoute>
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h1>⚙️ Admin Dashboard</h1>
-              <p>Admin component sẽ được triển khai ở đây</p>
-            </div>
-          </ProtectedRoute>
+          <ProtectedRoute><Admin /></ProtectedRoute>
         } />
         <Route path="*" element={
           <div style={{ textAlign: 'center', padding: '40px' }}>
