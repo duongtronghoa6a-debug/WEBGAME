@@ -36,6 +36,33 @@ const CaroGame = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [sessionId, setSessionId] = useState(null);
     const [hint, setHint] = useState(null);
+    const [gameName, setGameName] = useState('Caro Hàng 5');
+
+    // Game config based on gameId
+    useEffect(() => {
+        const id = parseInt(gameId);
+        switch (id) {
+            case 1: // Caro Hàng 5
+                setBoardSize({ rows: 15, cols: 15 });
+                setWinCondition(5);
+                setGameName('🎯 Caro Hàng 5');
+                break;
+            case 2: // Caro Hàng 4
+                setBoardSize({ rows: 10, cols: 10 });
+                setWinCondition(4);
+                setGameName('🎯 Caro Hàng 4');
+                break;
+            case 3: // Tic-Tac-Toe
+                setBoardSize({ rows: 3, cols: 3 });
+                setWinCondition(3);
+                setGameName('⭕ Tic-Tac-Toe');
+                break;
+            default:
+                setBoardSize({ rows: 15, cols: 15 });
+                setWinCondition(5);
+                setGameName('🎯 Caro Hàng 5');
+        }
+    }, [gameId]);
 
     // Initialize board
     useEffect(() => {
@@ -379,7 +406,7 @@ const CaroGame = () => {
                     <ArrowLeft size={20} />
                     Quay lại
                 </button>
-                <h1>🎯 Caro Hàng {winCondition}</h1>
+                <h1>{gameName}</h1>
                 <div className="game-stats">
                     <span className="stat">⏱️ {formatTime(timeSpent)}</span>
                     <span className="stat">🏆 {score}</span>
