@@ -1,164 +1,262 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw, Trophy, Clock, ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Save } from 'lucide-react';
+import api from '../../services/api';
+import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
-import api from '../../services/api';
 import './Game2048.css';
+
+// Colors for different tile values
+const TILE_COLORS = {
+    0: null,
+    2: LED_COLORS.TILE_2,
+    4: LED_COLORS.TILE_4,
+    8: LED_COLORS.TILE_8,
+    16: LED_COLORS.TILE_16,
+    32: LED_COLORS.TILE_32,
+    64: LED_COLORS.TILE_64,
+    128: LED_COLORS.TILE_128,
+    256: LED_COLORS.TILE_256,
+    512: LED_COLORS.TILE_512,
+    1024: LED_COLORS.TILE_1024,
+    2048: LED_COLORS.TILE_2048
+};
+
+const BOARD_SIZE = 4;
+const LED_SIZE = 12; // 4x4 scaled 3x = 12x12
 
 const Game2048 = () => {
     const navigate = useNavigate();
+
     const [board, setBoard] = useState([]);
     const [score, setScore] = useState(0);
     const [bestScore, setBestScore] = useState(0);
     const [gameOver, setGameOver] = useState(false);
     const [won, setWon] = useState(false);
-    const [time, setTime] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [timeSpent, setTimeSpent] = useState(0);
+    const [pixels, setPixels] = useState([]);
+    const [showInstructions, setShowInstructions] = useState(true);
 
     // Initialize game
-    const initGame = useCallback(() => {
-        const newBoard = Array(4).fill(null).map(() => Array(4).fill(0));
-        addRandomTile(newBoard);
-        addRandomTile(newBoard);
+    useEffect(() => {
+        initializeGame();
+    }, []);
+
+    // Convert board to LED pixels (scaled 3x)
+    useEffect(() => {
+        const newPixels = Array(LED_SIZE).fill(null).map(() =>
+            Array(LED_SIZE).fill(null)
+        );
+
+        const scale = 3;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const value = board[r]?.[c] || 0;
+                const color = TILE_COLORS[value] || (value > 2048 ? LED_COLORS.TILE_2048 : null);
+
+                // Fill 3x3 block
+                for (let dr = 0; dr < scale; dr++) {
+                    for (let dc = 0; dc < scale; dc++) {
+                        newPixels[r * scale + dr][c * scale + dc] = color;
+                    }
+                }
+            }
+        }
+
+        setPixels(newPixels);
+    }, [board]);
+
+    // Timer
+    useEffect(() => {
+        if (gameOver || won) return;
+        const interval = setInterval(() => {
+            setTimeSpent(prev => prev + 1);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [gameOver, won]);
+
+    // Create empty board
+    const createEmptyBoard = () => Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0));
+
+    // Add random tile
+    const addRandomTile = (boardToUpdate) => {
+        const emptyCells = [];
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (boardToUpdate[r][c] === 0) {
+                    emptyCells.push({ r, c });
+                }
+            }
+        }
+        if (emptyCells.length > 0) {
+            const { r, c } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            boardToUpdate[r][c] = Math.random() < 0.9 ? 2 : 4;
+        }
+        return boardToUpdate;
+    };
+
+    // Initialize game
+    const initializeGame = useCallback(() => {
+        let newBoard = createEmptyBoard();
+        newBoard = addRandomTile(newBoard);
+        newBoard = addRandomTile(newBoard);
         setBoard(newBoard);
         setScore(0);
         setGameOver(false);
         setWon(false);
-        setTime(0);
-        setIsPlaying(true);
+        setTimeSpent(0);
     }, []);
 
-    useEffect(() => {
-        initGame();
-        // Load best score
-        const saved = localStorage.getItem('2048_best');
-        if (saved) setBestScore(parseInt(saved));
-    }, [initGame]);
-
-    // Timer
-    useEffect(() => {
-        let interval;
-        if (isPlaying && !gameOver) {
-            interval = setInterval(() => setTime(t => t + 1), 1000);
-        }
-        return () => clearInterval(interval);
-    }, [isPlaying, gameOver]);
-
-    const addRandomTile = (board) => {
-        const empty = [];
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 4; j++) {
-                if (board[i][j] === 0) empty.push({ i, j });
+    // Check if game over
+    const checkGameOver = (boardToCheck) => {
+        // Check for empty cells
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (boardToCheck[r][c] === 0) return false;
             }
         }
-        if (empty.length > 0) {
-            const { i, j } = empty[Math.floor(Math.random() * empty.length)];
-            board[i][j] = Math.random() < 0.9 ? 2 : 4;
-        }
-    };
-
-    const slide = (row) => {
-        let arr = row.filter(x => x !== 0);
-        let newArr = [];
-        let scoreAdd = 0;
-
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i] === arr[i + 1]) {
-                newArr.push(arr[i] * 2);
-                scoreAdd += arr[i] * 2;
-                if (arr[i] * 2 === 2048) setWon(true);
-                i++;
-            } else {
-                newArr.push(arr[i]);
+        // Check for possible merges
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const val = boardToCheck[r][c];
+                if (r < BOARD_SIZE - 1 && boardToCheck[r + 1][c] === val) return false;
+                if (c < BOARD_SIZE - 1 && boardToCheck[r][c + 1] === val) return false;
             }
         }
-
-        while (newArr.length < 4) newArr.push(0);
-        return { row: newArr, score: scoreAdd };
+        return true;
     };
 
+    // Move tiles
     const move = useCallback((direction) => {
         if (gameOver) return;
 
         let newBoard = board.map(row => [...row]);
         let moved = false;
-        let totalScore = 0;
+        let newScore = score;
 
-        const rotateBoard = (b) => {
-            const n = b.length;
-            return b[0].map((_, i) => b.map(row => row[n - 1 - i]));
+        const moveRow = (row) => {
+            // Remove zeros
+            let newRow = row.filter(x => x !== 0);
+            // Merge
+            for (let i = 0; i < newRow.length - 1; i++) {
+                if (newRow[i] === newRow[i + 1]) {
+                    newRow[i] *= 2;
+                    newScore += newRow[i];
+                    if (newRow[i] === 2048) setWon(true);
+                    newRow.splice(i + 1, 1);
+                }
+            }
+            // Pad with zeros
+            while (newRow.length < BOARD_SIZE) newRow.push(0);
+            return newRow;
         };
 
-        // Rotate to always slide left
-        let rotations = { left: 0, up: 1, right: 2, down: 3 }[direction];
-        for (let r = 0; r < rotations; r++) newBoard = rotateBoard(newBoard);
-
-        // Slide left
-        for (let i = 0; i < 4; i++) {
-            const original = [...newBoard[i]];
-            const { row, score } = slide(newBoard[i]);
-            newBoard[i] = row;
-            totalScore += score;
-            if (original.join(',') !== row.join(',')) moved = true;
+        if (direction === 'left') {
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                const newRow = moveRow(newBoard[r]);
+                if (newRow.join(',') !== newBoard[r].join(',')) moved = true;
+                newBoard[r] = newRow;
+            }
+        } else if (direction === 'right') {
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                const newRow = moveRow(newBoard[r].reverse()).reverse();
+                if (newRow.join(',') !== newBoard[r].join(',')) moved = true;
+                newBoard[r] = newRow;
+            }
+        } else if (direction === 'up') {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const col = newBoard.map(row => row[c]);
+                const newCol = moveRow(col);
+                if (newCol.join(',') !== col.join(',')) moved = true;
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    newBoard[r][c] = newCol[r];
+                }
+            }
+        } else if (direction === 'down') {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const col = newBoard.map(row => row[c]).reverse();
+                const newCol = moveRow(col).reverse();
+                const origCol = newBoard.map(row => row[c]);
+                if (newCol.join(',') !== origCol.join(',')) moved = true;
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    newBoard[r][c] = newCol[r];
+                }
+            }
         }
-
-        // Rotate back
-        for (let r = 0; r < (4 - rotations) % 4; r++) newBoard = rotateBoard(newBoard);
 
         if (moved) {
-            addRandomTile(newBoard);
+            newBoard = addRandomTile(newBoard);
             setBoard(newBoard);
-            setScore(prev => {
-                const newScore = prev + totalScore;
-                if (newScore > bestScore) {
-                    setBestScore(newScore);
-                    localStorage.setItem('2048_best', newScore.toString());
-                }
-                return newScore;
-            });
+            setScore(newScore);
+            if (newScore > bestScore) setBestScore(newScore);
+            if (checkGameOver(newBoard)) setGameOver(true);
+        }
+    }, [board, score, bestScore, gameOver]);
 
-            // Check game over
-            if (!canMove(newBoard)) {
-                setGameOver(true);
-                setIsPlaying(false);
-                saveScore();
+    // Keyboard controls
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (gameOver && e.key !== 'Escape' && e.key !== 'Enter') return;
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    e.preventDefault();
+                    move('left');
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    e.preventDefault();
+                    move('right');
+                    break;
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    e.preventDefault();
+                    move('up');
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    e.preventDefault();
+                    move('down');
+                    break;
+                case 'Enter':
+                    if (gameOver || won) initializeGame();
+                    break;
+                case 'Escape':
+                    navigate('/games');
+                    break;
+                case 'h':
+                case 'H':
+                    setShowInstructions(prev => !prev);
+                    break;
             }
-        }
-    }, [board, gameOver, bestScore]);
+        };
 
-    const canMove = (board) => {
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 4; j++) {
-                if (board[i][j] === 0) return true;
-                if (j < 3 && board[i][j] === board[i][j + 1]) return true;
-                if (i < 3 && board[i][j] === board[i + 1][j]) return true;
-            }
-        }
-        return false;
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [gameOver, won, move, initializeGame, navigate]);
+
+    // Controller handlers (Left/Right = horizontal, Enter = hint for directions)
+    const handleLeft = () => move('left');
+    const handleRight = () => move('right');
+    const handleEnter = () => {
+        if (gameOver || won) initializeGame();
     };
+    const handleBack = () => navigate('/games');
+    const handleHint = () => setShowInstructions(prev => !prev);
 
-    const saveScore = async () => {
-        try {
-            await api.post('/games/18/sessions', {
-                score,
-                time_spent: time,
-                completed: true,
-                state: JSON.stringify({ board, score })
-            });
-        } catch (error) {
-            console.error('Error saving score:', error);
-        }
-    };
-
-    // Manual save game
+    // Save game
     const saveGame = async () => {
         try {
-            await api.post('/games/18/sessions', {
+            await api.post('/games/9/sessions', {
+                state: { board, score },
                 score,
-                time_spent: time,
-                completed: gameOver || won,
-                state: JSON.stringify({ board, score })
+                time_spent: timeSpent
             });
             alert('Game đã được lưu!');
         } catch (error) {
@@ -166,99 +264,61 @@ const Game2048 = () => {
         }
     };
 
-    // Keyboard controls
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                e.preventDefault();
-                const dir = e.key.replace('Arrow', '').toLowerCase();
-                move(dir);
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [move]);
-
-    // 5-button handlers
-    const handleLeft = () => move('left');
-    const handleRight = () => move('right');
-    const handleEnter = () => move('up');
-    const handleBack = () => navigate('/games');
-    const handleHint = () => {
-        alert('💡 Hướng dẫn:\n• Di chuyển các ô bằng phím mũi tên\n• Các ô cùng số sẽ gộp lại\n• Mục tiêu: Đạt ô 2048!');
-    };
-
-    const getTileClass = (value) => {
-        if (value === 0) return 'tile-0';
-        const power = Math.log2(value);
-        return `tile-${Math.min(power, 11)}`;
-    };
-
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
     return (
-        <div className="game-2048-page">
+        <div className="game-2048 led-game-2048">
             <div className="game-header">
-                <button className="btn btn-outline" onClick={() => navigate('/games')}>
-                    <ArrowLeft size={18} /> Quay lại
+                <button className="back-btn" onClick={() => navigate('/games')}>
+                    <ArrowLeft size={20} />
+                    Quay lại
                 </button>
-                <h1>2048</h1>
-                <button className="btn btn-primary" onClick={initGame}>
-                    <RotateCcw size={18} /> Chơi lại
-                </button>
-                <button className="btn btn-outline" onClick={saveGame} disabled={gameOver || won}>
-                    <Save size={18} /> Lưu
-                </button>
-            </div>
-
-            <div className="game-stats">
-                <div className="stat-box">
-                    <Trophy size={20} />
-                    <div>
-                        <span className="stat-label">Điểm</span>
-                        <span className="stat-value">{score}</span>
-                    </div>
-                </div>
-                <div className="stat-box best">
-                    <Trophy size={20} />
-                    <div>
-                        <span className="stat-label">Cao nhất</span>
-                        <span className="stat-value">{bestScore}</span>
-                    </div>
-                </div>
-                <div className="stat-box">
-                    <Clock size={20} />
-                    <div>
-                        <span className="stat-label">Thời gian</span>
-                        <span className="stat-value">{formatTime(time)}</span>
-                    </div>
+                <h1>🎮 2048</h1>
+                <div className="game-stats">
+                    <span className="stat">🏆 {score}</span>
+                    <span className="stat">👑 {bestScore}</span>
                 </div>
             </div>
 
-            <div className="game-board-2048">
-                {board.map((row, i) => (
-                    <div key={i} className="board-row">
-                        {row.map((cell, j) => (
-                            <div key={`${i}-${j}`} className={`tile ${getTileClass(cell)}`}>
-                                {cell > 0 && cell}
-                            </div>
-                        ))}
-                    </div>
-                ))}
+            <div className="game-controls">
+                <button className="control-btn" onClick={initializeGame}>
+                    <RotateCcw size={18} />
+                    Chơi lại
+                </button>
+                <button className="control-btn" onClick={saveGame}>
+                    <Save size={18} />
+                    Lưu game
+                </button>
+            </div>
 
-                {(gameOver || won) && (
-                    <div className="game-overlay">
-                        <h2>{won ? '🎉 Chiến thắng!' : '💀 Game Over!'}</h2>
-                        <p>Điểm: {score}</p>
-                        <button className="btn btn-primary" onClick={initGame}>
-                            Chơi lại
-                        </button>
+            <div className="game-status">
+                {won && !gameOver ? (
+                    <div className="status-message win">
+                        🎉 Bạn đã đạt 2048! Tiếp tục chơi?
+                    </div>
+                ) : gameOver ? (
+                    <div className="status-message lose">
+                        💀 Game Over! Điểm: {score}
+                    </div>
+                ) : (
+                    <div className="status-message">
+                        ⏱️ {formatTime(timeSpent)} | Dùng ← ↑ → ↓ để di chuyển
                     </div>
                 )}
+            </div>
+
+            <div className="board-container">
+                <LEDMatrix
+                    pixels={pixels}
+                    rows={LED_SIZE}
+                    cols={LED_SIZE}
+                    dotSize="medium"
+                    showBorder={true}
+                />
             </div>
 
             <GameController
@@ -267,16 +327,22 @@ const Game2048 = () => {
                 onEnter={handleEnter}
                 onBack={handleBack}
                 onHint={handleHint}
-                disabledButtons={gameOver ? ['left', 'right', 'enter'] : []}
+                disabledButtons={{}}
             />
 
-            <div className="game-instructions">
-                <h4>📖 Hướng dẫn</h4>
-                <p>Dùng phím mũi tên hoặc nút điều khiển để di chuyển. Gộp các ô cùng số để tạo số lớn hơn. Đạt 2048 để chiến thắng!</p>
-            </div>
+            {showInstructions && (
+                <div className="game-instructions">
+                    <h3>Hướng dẫn</h3>
+                    <ul>
+                        <li>Dùng ← ↑ → ↓ để trượt các ô</li>
+                        <li>Ô cùng giá trị sẽ gộp lại thành 1</li>
+                        <li>Đạt ô 2048 để thắng</li>
+                        <li>Màu càng đậm = giá trị càng cao</li>
+                    </ul>
+                </div>
+            )}
 
-            {/* Rating & Comments */}
-            <GameRatingComment gameId={18} />
+            <GameRatingComment gameId={9} />
         </div>
     );
 };

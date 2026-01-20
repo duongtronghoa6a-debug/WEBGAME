@@ -1,51 +1,175 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw, Trophy, Clock, ArrowLeft, Flag, Bomb, Save } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Save, Flag } from 'lucide-react';
 import api from '../../services/api';
+import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
 import './Minesweeper.css';
 
+const BOARD_SIZE = 9;
+const MINE_COUNT = 10;
+
+// Colors for numbers
+const NUMBER_COLORS = {
+    1: '#3498db',
+    2: '#27ae60',
+    3: '#e74c3c',
+    4: '#8e44ad',
+    5: '#d35400',
+    6: '#16a085',
+    7: '#2c3e50',
+    8: '#7f8c8d'
+};
+
 const Minesweeper = () => {
     const navigate = useNavigate();
+
     const [board, setBoard] = useState([]);
     const [revealed, setRevealed] = useState([]);
     const [flagged, setFlagged] = useState([]);
     const [gameOver, setGameOver] = useState(false);
     const [won, setWon] = useState(false);
-    const [time, setTime] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
     const [cursor, setCursor] = useState({ row: 4, col: 4 });
-    const [mineCount] = useState(10);
-    const [size] = useState({ rows: 9, cols: 9 });
+    const [firstClick, setFirstClick] = useState(true);
+    const [mineCount, setMineCount] = useState(MINE_COUNT);
+    const [timeSpent, setTimeSpent] = useState(0);
+    const [pixels, setPixels] = useState([]);
+    const [showInstructions, setShowInstructions] = useState(true);
 
     // Initialize game
-    const initGame = useCallback(() => {
-        const newBoard = Array(size.rows).fill(null).map(() => Array(size.cols).fill(0));
-        const newRevealed = Array(size.rows).fill(null).map(() => Array(size.cols).fill(false));
-        const newFlagged = Array(size.rows).fill(null).map(() => Array(size.cols).fill(false));
+    useEffect(() => {
+        initializeGame();
+    }, []);
 
-        // Place mines
-        let placed = 0;
-        while (placed < mineCount) {
-            const r = Math.floor(Math.random() * size.rows);
-            const c = Math.floor(Math.random() * size.cols);
-            if (newBoard[r][c] !== -1) {
-                newBoard[r][c] = -1;
-                placed++;
+    // Convert board to LED pixels
+    useEffect(() => {
+        const newPixels = Array(BOARD_SIZE).fill(null).map(() =>
+            Array(BOARD_SIZE).fill(null)
+        );
+
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (flagged.some(f => f.row === r && f.col === c)) {
+                    newPixels[r][c] = LED_COLORS.CANDY_ORANGE; // Flag = orange
+                } else if (!revealed[r]?.[c]) {
+                    newPixels[r][c] = LED_COLORS.WALL; // Unrevealed = gray
+                } else if (board[r]?.[c] === -1) {
+                    newPixels[r][c] = LED_COLORS.CANDY_RED; // Mine = red
+                } else if (board[r]?.[c] === 0) {
+                    newPixels[r][c] = null; // Empty = off
+                } else {
+                    newPixels[r][c] = NUMBER_COLORS[board[r][c]] || LED_COLORS.CANDY_BLUE;
+                }
             }
         }
 
+        setPixels(newPixels);
+    }, [board, revealed, flagged]);
+
+    // Timer
+    useEffect(() => {
+        if (gameOver || won || firstClick) return;
+        const interval = setInterval(() => {
+            setTimeSpent(prev => prev + 1);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [gameOver, won, firstClick]);
+
+    // Keyboard controls
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (gameOver || won) {
+                if (e.key === 'Enter') initializeGame();
+                if (e.key === 'Escape') navigate('/games');
+                return;
+            }
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    setCursor(prev => ({ ...prev, col: Math.min(BOARD_SIZE - 1, prev.col + 1) }));
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    setCursor(prev => ({ ...prev, row: Math.max(0, prev.row - 1) }));
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    setCursor(prev => ({ ...prev, row: Math.min(BOARD_SIZE - 1, prev.row + 1) }));
+                    break;
+                case 'Enter':
+                case ' ':
+                    e.preventDefault();
+                    revealCell(cursor.row, cursor.col);
+                    break;
+                case 'f':
+                case 'F':
+                    e.preventDefault();
+                    toggleFlag(cursor.row, cursor.col);
+                    break;
+                case 'Escape':
+                    navigate('/games');
+                    break;
+                case 'h':
+                case 'H':
+                    setShowInstructions(prev => !prev);
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [cursor, gameOver, won, board, revealed, flagged]);
+
+    // Initialize game
+    const initializeGame = useCallback(() => {
+        const emptyBoard = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0));
+        const emptyRevealed = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(false));
+
+        setBoard(emptyBoard);
+        setRevealed(emptyRevealed);
+        setFlagged([]);
+        setGameOver(false);
+        setWon(false);
+        setFirstClick(true);
+        setMineCount(MINE_COUNT);
+        setTimeSpent(0);
+        setCursor({ row: 4, col: 4 });
+    }, []);
+
+    // Place mines (avoiding first click)
+    const placeMines = (excludeRow, excludeCol) => {
+        const newBoard = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0));
+        let placed = 0;
+
+        while (placed < MINE_COUNT) {
+            const r = Math.floor(Math.random() * BOARD_SIZE);
+            const c = Math.floor(Math.random() * BOARD_SIZE);
+
+            // Avoid first click area
+            if (Math.abs(r - excludeRow) <= 1 && Math.abs(c - excludeCol) <= 1) continue;
+            if (newBoard[r][c] === -1) continue;
+
+            newBoard[r][c] = -1;
+            placed++;
+        }
+
         // Calculate numbers
-        for (let r = 0; r < size.rows; r++) {
-            for (let c = 0; c < size.cols; c++) {
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
                 if (newBoard[r][c] === -1) continue;
                 let count = 0;
                 for (let dr = -1; dr <= 1; dr++) {
                     for (let dc = -1; dc <= 1; dc++) {
-                        const nr = r + dr, nc = c + dc;
-                        if (nr >= 0 && nr < size.rows && nc >= 0 && nc < size.cols) {
-                            if (newBoard[nr][nc] === -1) count++;
+                        const nr = r + dr;
+                        const nc = c + dc;
+                        if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && newBoard[nr][nc] === -1) {
+                            count++;
                         }
                     }
                 }
@@ -53,155 +177,93 @@ const Minesweeper = () => {
             }
         }
 
-        setBoard(newBoard);
-        setRevealed(newRevealed);
-        setFlagged(newFlagged);
-        setGameOver(false);
-        setWon(false);
-        setTime(0);
-        setIsPlaying(true);
-        setCursor({ row: 4, col: 4 });
-    }, [size, mineCount]);
+        return newBoard;
+    };
 
-    useEffect(() => {
-        initGame();
-    }, [initGame]);
+    // Reveal cell
+    const revealCell = (row, col) => {
+        if (revealed[row]?.[col]) return;
+        if (flagged.some(f => f.row === row && f.col === col)) return;
 
-    // Timer
-    useEffect(() => {
-        let interval;
-        if (isPlaying && !gameOver && !won) {
-            interval = setInterval(() => setTime(t => t + 1), 1000);
+        let currentBoard = board;
+
+        // First click - place mines
+        if (firstClick) {
+            currentBoard = placeMines(row, col);
+            setBoard(currentBoard);
+            setFirstClick(false);
         }
-        return () => clearInterval(interval);
-    }, [isPlaying, gameOver, won]);
 
-    const revealCell = useCallback((r, c) => {
-        if (gameOver || won || revealed[r][c] || flagged[r][c]) return;
-
-        const newRevealed = revealed.map(row => [...row]);
-
-        const reveal = (row, col) => {
-            if (row < 0 || row >= size.rows || col < 0 || col >= size.cols) return;
-            if (newRevealed[row][col] || flagged[row][col]) return;
-
-            newRevealed[row][col] = true;
-
-            if (board[row][col] === 0) {
-                for (let dr = -1; dr <= 1; dr++) {
-                    for (let dc = -1; dc <= 1; dc++) {
-                        reveal(row + dr, col + dc);
-                    }
-                }
-            }
-        };
-
-        reveal(r, c);
-        setRevealed(newRevealed);
-
-        // Check mine hit
-        if (board[r][c] === -1) {
+        // Hit mine
+        if (currentBoard[row][col] === -1) {
+            const newRevealed = revealed.map(r => r.map(() => true));
+            setRevealed(newRevealed);
             setGameOver(true);
-            setIsPlaying(false);
-            // Reveal all mines
-            const allRevealed = newRevealed.map((row, ri) =>
-                row.map((cell, ci) => board[ri][ci] === -1 ? true : cell)
-            );
-            setRevealed(allRevealed);
             return;
         }
 
+        // Flood fill for empty cells
+        const newRevealed = revealed.map(r => [...r]);
+        const toReveal = [[row, col]];
+
+        while (toReveal.length > 0) {
+            const [r, c] = toReveal.pop();
+            if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) continue;
+            if (newRevealed[r][c]) continue;
+
+            newRevealed[r][c] = true;
+
+            if (currentBoard[r][c] === 0) {
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        toReveal.push([r + dr, c + dc]);
+                    }
+                }
+            }
+        }
+
+        setRevealed(newRevealed);
+
         // Check win
-        let unrevealedSafe = 0;
-        for (let i = 0; i < size.rows; i++) {
-            for (let j = 0; j < size.cols; j++) {
-                if (!newRevealed[i][j] && board[i][j] !== -1) unrevealedSafe++;
+        let unrevealedCount = 0;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (!newRevealed[r][c]) unrevealedCount++;
             }
         }
-        if (unrevealedSafe === 0) {
+        if (unrevealedCount === MINE_COUNT) {
             setWon(true);
-            setIsPlaying(false);
         }
-    }, [board, revealed, flagged, gameOver, won, size]);
+    };
 
-    const toggleFlag = useCallback((r, c) => {
-        if (gameOver || won || revealed[r][c]) return;
-        const newFlagged = flagged.map(row => [...row]);
-        newFlagged[r][c] = !newFlagged[r][c];
-        setFlagged(newFlagged);
-    }, [flagged, revealed, gameOver, won]);
+    // Toggle flag
+    const toggleFlag = (row, col) => {
+        if (revealed[row]?.[col]) return;
 
-    // Keyboard controls
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (gameOver || won) return;
-            e.preventDefault();
+        const flagIndex = flagged.findIndex(f => f.row === row && f.col === col);
+        if (flagIndex >= 0) {
+            setFlagged(prev => prev.filter((_, i) => i !== flagIndex));
+            setMineCount(prev => prev + 1);
+        } else {
+            setFlagged(prev => [...prev, { row, col }]);
+            setMineCount(prev => prev - 1);
+        }
+    };
 
-            switch (e.key) {
-                case 'ArrowLeft':
-                    setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
-                    break;
-                case 'ArrowRight':
-                    setCursor(prev => ({ ...prev, col: Math.min(size.cols - 1, prev.col + 1) }));
-                    break;
-                case 'ArrowUp':
-                    setCursor(prev => ({ ...prev, row: Math.max(0, prev.row - 1) }));
-                    break;
-                case 'ArrowDown':
-                    setCursor(prev => ({ ...prev, row: Math.min(size.rows - 1, prev.row + 1) }));
-                    break;
-                case 'Enter':
-                case ' ':
-                    revealCell(cursor.row, cursor.col);
-                    break;
-                case 'f':
-                case 'F':
-                    toggleFlag(cursor.row, cursor.col);
-                    break;
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cursor, gameOver, won, size, revealCell, toggleFlag]);
-
-    // 5-button handlers
+    // Controller handlers
     const handleLeft = () => setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
-    const handleRight = () => setCursor(prev => ({ ...prev, col: Math.min(size.cols - 1, prev.col + 1) }));
+    const handleRight = () => setCursor(prev => ({ ...prev, col: Math.min(BOARD_SIZE - 1, prev.col + 1) }));
     const handleEnter = () => revealCell(cursor.row, cursor.col);
     const handleBack = () => navigate('/games');
     const handleHint = () => toggleFlag(cursor.row, cursor.col);
 
-    const getCellClass = (r, c) => {
-        let classes = ['cell'];
-        if (cursor.row === r && cursor.col === c) classes.push('cursor');
-        if (revealed[r][c]) {
-            classes.push('revealed');
-            if (board[r][c] === -1) classes.push('mine');
-            else if (board[r][c] > 0) classes.push(`num-${board[r][c]}`);
-        } else if (flagged[r][c]) {
-            classes.push('flagged');
-        }
-        return classes.join(' ');
-    };
-
-    const getCellContent = (r, c) => {
-        if (flagged[r][c] && !revealed[r][c]) return <Flag size={16} />;
-        if (!revealed[r][c]) return '';
-        if (board[r][c] === -1) return <Bomb size={16} />;
-        if (board[r][c] === 0) return '';
-        return board[r][c];
-    };
-
-    const flagCount = flagged.flat().filter(Boolean).length;
-
     // Save game
     const saveGame = async () => {
         try {
-            await api.post('/games/11/sessions', {
-                state: JSON.stringify({ board, revealed, flagged, cursor }),
-                score: time,
-                time_spent: time,
-                completed: won
+            await api.post('/games/10/sessions', {
+                state: { board, revealed, flagged },
+                score: won ? 1000 - timeSpent : 0,
+                time_spent: timeSpent
             });
             alert('Game đã được lưu!');
         } catch (error) {
@@ -209,63 +271,66 @@ const Minesweeper = () => {
         }
     };
 
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
     return (
-        <div className="minesweeper-page">
+        <div className="minesweeper led-minesweeper">
             <div className="game-header">
-                <button className="btn btn-outline" onClick={() => navigate('/games')}>
-                    <ArrowLeft size={18} /> Quay lại
+                <button className="back-btn" onClick={() => navigate('/games')}>
+                    <ArrowLeft size={20} />
+                    Quay lại
                 </button>
                 <h1>💣 Dò Mìn</h1>
-                <button className="btn btn-primary" onClick={initGame}>
-                    <RotateCcw size={18} /> Chơi lại
-                </button>
-                <button className="btn btn-outline" onClick={saveGame} disabled={gameOver || won}>
-                    <Save size={18} /> Lưu
-                </button>
-            </div>
-
-            <div className="game-stats">
-                <div className="stat-box">
-                    <Bomb size={20} />
-                    <div>
-                        <span className="stat-label">Mìn</span>
-                        <span className="stat-value">{mineCount - flagCount}</span>
-                    </div>
-                </div>
-                <div className="stat-box">
-                    <Clock size={20} />
-                    <div>
-                        <span className="stat-label">Thời gian</span>
-                        <span className="stat-value">{time}s</span>
-                    </div>
+                <div className="game-stats">
+                    <span className="stat">💣 {mineCount}</span>
+                    <span className="stat">⏱️ {formatTime(timeSpent)}</span>
                 </div>
             </div>
 
-            <div className="minesweeper-board">
-                {board.map((row, r) => (
-                    <div key={r} className="board-row">
-                        {row.map((_, c) => (
-                            <div
-                                key={`${r}-${c}`}
-                                className={getCellClass(r, c)}
-                                onClick={() => revealCell(r, c)}
-                                onContextMenu={(e) => { e.preventDefault(); toggleFlag(r, c); }}
-                            >
-                                {getCellContent(r, c)}
-                            </div>
-                        ))}
-                    </div>
-                ))}
+            <div className="game-controls">
+                <button className="control-btn" onClick={initializeGame}>
+                    <RotateCcw size={18} />
+                    Chơi lại
+                </button>
+                <button className="control-btn" onClick={() => toggleFlag(cursor.row, cursor.col)}>
+                    <Flag size={18} />
+                    Cắm cờ
+                </button>
+                <button className="control-btn" onClick={saveGame}>
+                    <Save size={18} />
+                    Lưu game
+                </button>
+            </div>
 
-                {(gameOver || won) && (
-                    <div className="game-overlay">
-                        <h2>{won ? '🎉 Chiến thắng!' : '💥 Bạn đã đạp trúng mìn!'}</h2>
-                        <p>Thời gian: {time}s</p>
-                        <button className="btn btn-primary" onClick={initGame}>
-                            Chơi lại
-                        </button>
+            <div className="game-status">
+                {gameOver ? (
+                    <div className="status-message lose">
+                        💥 Bạn đã dẫm phải mìn!
+                    </div>
+                ) : won ? (
+                    <div className="status-message win">
+                        🎉 Chúc mừng! Bạn đã thắng!
+                    </div>
+                ) : (
+                    <div className="status-message">
+                        🎮 ← ↑ → ↓ di chuyển | Enter mở ô | H cắm cờ
                     </div>
                 )}
+            </div>
+
+            <div className="board-container">
+                <LEDMatrix
+                    pixels={pixels}
+                    rows={BOARD_SIZE}
+                    cols={BOARD_SIZE}
+                    cursor={cursor}
+                    dotSize="large"
+                    showBorder={true}
+                />
             </div>
 
             <GameController
@@ -274,20 +339,24 @@ const Minesweeper = () => {
                 onEnter={handleEnter}
                 onBack={handleBack}
                 onHint={handleHint}
-                disabledButtons={gameOver || won ? ['left', 'right', 'enter', 'hint'] : []}
+                disabledButtons={{
+                    enter: gameOver || won
+                }}
             />
 
-            <div className="game-instructions">
-                <h4>📖 Hướng dẫn</h4>
-                <p>
-                    • Di chuyển bằng phím mũi tên<br />
-                    • Enter: Mở ô | F hoặc Hint: Cắm cờ<br />
-                    • Số = số mìn xung quanh. Tránh mìn để thắng!
-                </p>
-            </div>
+            {showInstructions && (
+                <div className="game-instructions">
+                    <h3>Hướng dẫn</h3>
+                    <ul>
+                        <li>← ↑ → ↓ để di chuyển</li>
+                        <li>Enter để mở ô</li>
+                        <li>H hoặc Hint để cắm cờ</li>
+                        <li>Màu sắc: Xám=chưa mở, Cam=cờ, Đỏ=mìn</li>
+                    </ul>
+                </div>
+            )}
 
-            {/* Rating & Comments */}
-            <GameRatingComment gameId={11} />
+            <GameRatingComment gameId={10} />
         </div>
     );
 };
