@@ -49,6 +49,55 @@ exports.getStatistics = async (req, res) => {
                 db.raw('COUNT(*) as total')
             );
 
+        // Messages count
+        const [messagesCount] = await db('messages').count('* as count');
+
+        // Recent activities - combine from multiple sources
+        const recentGameSessions = await db('game_sessions')
+            .select(
+                'game_sessions.created_at',
+                'users.username',
+                'games.name as game_name'
+            )
+            .join('users', 'users.id', 'game_sessions.user_id')
+            .join('games', 'games.id', 'game_sessions.game_id')
+            .orderBy('game_sessions.created_at', 'desc')
+            .limit(3);
+
+        const recentUsers = await db('users')
+            .select('username', 'created_at')
+            .orderBy('created_at', 'desc')
+            .limit(2);
+
+        const recentRatings = await db('ratings')
+            .select('ratings.stars', 'ratings.created_at', 'users.username', 'games.name as game_name')
+            .join('users', 'users.id', 'ratings.user_id')
+            .join('games', 'games.id', 'ratings.game_id')
+            .orderBy('ratings.created_at', 'desc')
+            .limit(2);
+
+        // Format activities
+        const activities = [
+            ...recentGameSessions.map(s => ({
+                type: 'game',
+                icon: '🎮',
+                text: `${s.username} đã chơi ${s.game_name}`,
+                time: s.created_at
+            })),
+            ...recentUsers.map(u => ({
+                type: 'register',
+                icon: '👤',
+                text: `${u.username} đã đăng ký`,
+                time: u.created_at
+            })),
+            ...recentRatings.map(r => ({
+                type: 'rating',
+                icon: '⭐',
+                text: `${r.username} đánh giá ${r.stars}* cho ${r.game_name}`,
+                time: r.created_at
+            }))
+        ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 5);
+
         res.json({
             success: true,
             data: {
@@ -65,7 +114,11 @@ exports.getStatistics = async (req, res) => {
                 ratings: {
                     average: parseFloat(ratingStats.average).toFixed(1),
                     total: parseInt(ratingStats.total)
-                }
+                },
+                messages: {
+                    total: parseInt(messagesCount.count)
+                },
+                activities
             }
         });
     } catch (error) {

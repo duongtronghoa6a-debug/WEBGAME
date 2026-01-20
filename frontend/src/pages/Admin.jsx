@@ -36,12 +36,13 @@ const Admin = () => {
                 totalUsers: data.users?.total || 0,
                 totalGames: 0, // Will be set from games.length after fetchGames
                 totalSessions: data.games?.total_plays || 0,
-                activeToday: data.users?.new_today || 0, // Use new_today instead of plays_today for "online"
+                activeToday: data.users?.new_today || 0, // Use new_today
                 newUsersThisWeek: data.users?.new_this_week || 0,
-                totalMessages: 0, // Can add later if needed
+                totalMessages: data.messages?.total || 0, // Use API
                 avgRating: data.ratings?.average || 0,
                 totalRatings: data.ratings?.total || 0,
-                popularGames: data.games?.most_popular || []
+                popularGames: data.games?.most_popular || [],
+                activities: data.activities || [] // Use API activities
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -233,7 +234,7 @@ const Admin = () => {
                             <Activity size={32} />
                             <div className="stat-content">
                                 <span className="stat-value">{stats?.activeToday || 0}</span>
-                                <span className="stat-label">Đang online</span>
+                                <span className="stat-label">Mới hôm nay</span>
                             </div>
                         </div>
                         <div className="stat-card warning">
@@ -317,31 +318,33 @@ const Admin = () => {
                     <div className="recent-section">
                         <h3>📊 Hoạt động gần đây</h3>
                         <div className="activity-list">
-                            <div className="activity-item">
-                                <span className="activity-icon">🎮</span>
-                                <span className="activity-text">player1 đã chơi Caro</span>
-                                <span className="activity-time">5 phút trước</span>
-                            </div>
-                            <div className="activity-item">
-                                <span className="activity-icon">👤</span>
-                                <span className="activity-text">newbie123 đã đăng ký</span>
-                                <span className="activity-time">15 phút trước</span>
-                            </div>
-                            <div className="activity-item">
-                                <span className="activity-icon">🏆</span>
-                                <span className="activity-text">pro_gamer đạt 10000 điểm</span>
-                                <span className="activity-time">30 phút trước</span>
-                            </div>
-                            <div className="activity-item">
-                                <span className="activity-icon">💬</span>
-                                <span className="activity-text">player2 gửi tin nhắn cho player1</span>
-                                <span className="activity-time">45 phút trước</span>
-                            </div>
-                            <div className="activity-item">
-                                <span className="activity-icon">⭐</span>
-                                <span className="activity-text">gamer_pro đánh giá 5* cho Snake</span>
-                                <span className="activity-time">1 giờ trước</span>
-                            </div>
+                            {(stats?.activities || []).length > 0 ? (
+                                stats.activities.map((activity, idx) => {
+                                    // Format relative time
+                                    const timeAgo = new Date(activity.time);
+                                    const now = new Date();
+                                    const diffMs = now - timeAgo;
+                                    const diffMins = Math.floor(diffMs / 60000);
+                                    const diffHours = Math.floor(diffMins / 60);
+                                    const diffDays = Math.floor(diffHours / 24);
+                                    let timeStr = 'vừa xong';
+                                    if (diffDays > 0) timeStr = `${diffDays} ngày trước`;
+                                    else if (diffHours > 0) timeStr = `${diffHours} giờ trước`;
+                                    else if (diffMins > 0) timeStr = `${diffMins} phút trước`;
+
+                                    return (
+                                        <div key={idx} className="activity-item">
+                                            <span className="activity-icon">{activity.icon}</span>
+                                            <span className="activity-text">{activity.text}</span>
+                                            <span className="activity-time">{timeStr}</span>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="activity-item">
+                                    <span className="activity-text">Chưa có hoạt động nào</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
