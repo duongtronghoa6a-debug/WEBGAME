@@ -225,22 +225,27 @@ const TetrisGame = () => {
             switch (e.key) {
                 case 'ArrowLeft': moveLeft(); break;
                 case 'ArrowRight': moveRight(); break;
-                case 'ArrowUp': rotate(); break;
-                case 'ArrowDown': moveDown(); break;
-                case ' ': hardDrop(); break;
+                case 'ArrowUp':
+                case ' ':
+                    rotate(); // Up or Space = Rotate 90°
+                    break;
+                case 'ArrowDown':
+                case 'Enter':
+                    hardDrop(); // Down or Enter = Hard drop (instant)
+                    break;
                 case 'p': case 'P': setIsPaused(p => !p); break;
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [moveLeft, moveRight, rotate, moveDown, hardDrop, gameOver]);
+    }, [moveLeft, moveRight, rotate, hardDrop, gameOver]);
 
     // 5-button handlers
     const handleLeft = () => moveLeft();
     const handleRight = () => moveRight();
-    const handleEnter = () => rotate();
+    const handleEnter = () => hardDrop(); // Enter = hard drop
     const handleBack = () => navigate('/games');
-    const handleHint = () => hardDrop();
+    const handleHint = () => rotate(); // Hint = rotate
 
     // Render board with current piece
     const renderBoard = () => {
@@ -365,7 +370,7 @@ const TetrisGame = () => {
             <div className="game-instructions">
                 <h4>📖 Điều khiển</h4>
                 <p>
-                    ← →: Di chuyển | ↑/Enter: Xoay | ↓: Rơi nhanh | Space/Hint: Thả nhanh | P: Tạm dừng
+                    ← →: Di chuyển | ↑/Space: Xoay 90° | ↓/Enter: Thả nhanh | P: Tạm dừng
                 </p>
             </div>
 
