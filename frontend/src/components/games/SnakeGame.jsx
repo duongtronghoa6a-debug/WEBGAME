@@ -40,6 +40,18 @@ const SnakeGame = () => {
     const [showGameOverDialog, setShowGameOverDialog] = useState(false);
     const [loadedFromSave, setLoadedFromSave] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const prevDirectionRef = useRef(DIRECTIONS.RIGHT); // Track previous direction for reverse prevention
+
+    // Board dimensions: 18x18 playable + 1 wall on each side = 20x20 display
+    const WALL_SIZE = 1;
+    const PLAYABLE_WIDTH = boardSize.width - 2 * WALL_SIZE;  // 18
+    const PLAYABLE_HEIGHT = boardSize.height - 2 * WALL_SIZE; // 18
+
+    // Check if position is a wall
+    const isWall = (x, y) => {
+        return x < WALL_SIZE || x >= boardSize.width - WALL_SIZE ||
+            y < WALL_SIZE || y >= boardSize.height - WALL_SIZE;
+    };
 
     // Convert game state to LED pixels
     useEffect(() => {
@@ -47,9 +59,18 @@ const SnakeGame = () => {
             Array(boardSize.width).fill(null)
         );
 
+        // Draw walls around the border
+        for (let y = 0; y < boardSize.height; y++) {
+            for (let x = 0; x < boardSize.width; x++) {
+                if (isWall(x, y)) {
+                    newPixels[y][x] = LED_COLORS.WALL;
+                }
+            }
+        }
+
         // Draw snake
         snake.forEach((segment, index) => {
-            if (newPixels[segment.y]) {
+            if (newPixels[segment.y] && !isWall(segment.x, segment.y)) {
                 if (index === 0) {
                     // Snake head
                     newPixels[segment.y][segment.x] = LED_COLORS.SNAKE_HEAD;
@@ -61,32 +82,37 @@ const SnakeGame = () => {
         });
 
         // Draw food
-        if (newPixels[food.y]) {
+        if (newPixels[food.y] && !isWall(food.x, food.y)) {
             newPixels[food.y][food.x] = LED_COLORS.FOOD;
         }
 
         setPixels(newPixels);
     }, [snake, food, boardSize]);
 
-    // Generate random food position
+    // Generate random food position (not on walls or snake)
     const generateFood = useCallback((currentSnake) => {
         let newFood;
         do {
             newFood = {
-                x: Math.floor(Math.random() * boardSize.width),
-                y: Math.floor(Math.random() * boardSize.height)
+                x: WALL_SIZE + Math.floor(Math.random() * PLAYABLE_WIDTH),
+                y: WALL_SIZE + Math.floor(Math.random() * PLAYABLE_HEIGHT)
             };
-        } while (currentSnake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
+        } while (
+            currentSnake.some(segment => segment.x === newFood.x && segment.y === newFood.y) ||
+            isWall(newFood.x, newFood.y)
+        );
         return newFood;
-    }, [boardSize]);
+    }, [boardSize, PLAYABLE_WIDTH, PLAYABLE_HEIGHT]);
 
     // Initialize game
     const initializeGame = useCallback(() => {
+        // Start snake in the center of playable area
         const initialSnake = [{ x: 10, y: 10 }];
         setSnake(initialSnake);
         setFood(generateFood(initialSnake));
         setDirection(DIRECTIONS.RIGHT);
         directionRef.current = DIRECTIONS.RIGHT;
+        prevDirectionRef.current = DIRECTIONS.RIGHT;
         setScore(0);
         setTimeSpent(0);
         setGameOver(false);
@@ -106,20 +132,24 @@ const SnakeGame = () => {
                     y: head.y + directionRef.current.y
                 };
 
-                // Check wall collision
-                if (newHead.x < 0 || newHead.x >= boardSize.width ||
-                    newHead.y < 0 || newHead.y >= boardSize.height) {
+                // Check wall collision (hit the wall border)
+                if (isWall(newHead.x, newHead.y)) {
                     setGameOver(true);
                     setIsPlaying(false);
                     return prevSnake;
                 }
 
-                // Check self collision
-                if (prevSnake.some(segment => segment.x === newHead.x && segment.y === newHead.y)) {
+                // Check self collision (only if snake has more than 1 segment)
+                // Skip checking the tail if it will move (no food eaten)
+                const checkSnake = prevSnake.slice(0, -1); // Exclude tail that will move
+                if (checkSnake.some(segment => segment.x === newHead.x && segment.y === newHead.y)) {
                     setGameOver(true);
                     setIsPlaying(false);
                     return prevSnake;
                 }
+
+                // Update previous direction after successful move
+                prevDirectionRef.current = directionRef.current;
 
                 const newSnake = [newHead, ...prevSnake];
 
@@ -203,7 +233,8 @@ const SnakeGame = () => {
                 case 'w':
                 case 'W':
                     e.preventDefault();
-                    if (directionRef.current !== DIRECTIONS.DOWN) {
+                    // Check against previous actual movement direction, not current queued direction
+                    if (prevDirectionRef.current !== DIRECTIONS.DOWN) {
                         directionRef.current = DIRECTIONS.UP;
                         setDirection(DIRECTIONS.UP);
                     }
@@ -212,7 +243,7 @@ const SnakeGame = () => {
                 case 's':
                 case 'S':
                     e.preventDefault();
-                    if (directionRef.current !== DIRECTIONS.UP) {
+                    if (prevDirectionRef.current !== DIRECTIONS.UP) {
                         directionRef.current = DIRECTIONS.DOWN;
                         setDirection(DIRECTIONS.DOWN);
                     }
@@ -221,7 +252,7 @@ const SnakeGame = () => {
                 case 'a':
                 case 'A':
                     e.preventDefault();
-                    if (directionRef.current !== DIRECTIONS.RIGHT) {
+                    if (prevDirectionRef.current !== DIRECTIONS.RIGHT) {
                         directionRef.current = DIRECTIONS.LEFT;
                         setDirection(DIRECTIONS.LEFT);
                     }
@@ -230,7 +261,7 @@ const SnakeGame = () => {
                 case 'd':
                 case 'D':
                     e.preventDefault();
-                    if (directionRef.current !== DIRECTIONS.LEFT) {
+                    if (prevDirectionRef.current !== DIRECTIONS.LEFT) {
                         directionRef.current = DIRECTIONS.RIGHT;
                         setDirection(DIRECTIONS.RIGHT);
                     }
