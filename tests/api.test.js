@@ -1,10 +1,9 @@
 /**
  * API Automated Tests
- * Chạy: npm install node-fetch@2 && node tests/api.test.js
+ * Chạy: npm run test (từ thư mục backend)
  */
 
-// Node.js < 18 needs node-fetch
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+// Node.js 18+ has native fetch
 
 const API_BASE = 'http://localhost:5000/api';
 const API_KEY = 'boardgame-api-key-2024-secure';

@@ -81,6 +81,8 @@ Lưu thông tin người dùng hệ thống.
 | password_hash | VARCHAR(255) | NOT NULL | Mật khẩu đã hash |
 | avatar_url | TEXT | NULL | URL avatar |
 | is_admin | BOOLEAN | DEFAULT false | Phân quyền admin |
+| status | VARCHAR(20) | DEFAULT 'active' | Trạng thái (active/banned) |
+| role | VARCHAR(20) | DEFAULT 'player' | User Role (admin/player) |
 | created_at | TIMESTAMP | DEFAULT NOW() | Thời gian tạo |
 | updated_at | TIMESTAMP | DEFAULT NOW() | Thời gian cập nhật |
 
@@ -368,6 +370,7 @@ CREATE INDEX idx_comments_created ON comments(created_at DESC);
 | 7 | 007_create_user_achievements_table.js | Tạo bảng user_achievements |
 | 8 | 008_create_ratings_table.js | Tạo bảng ratings |
 | 9 | 009_create_comments_table.js | Tạo bảng comments |
+| 10 | 010_add_user_status_role.js | Thêm cột status, role |
 
 ### 4.2. Ví Dụ Migration
 
@@ -395,7 +398,7 @@ exports.down = function(knex) {
 
 ## 5. Data Seeding
 
-### 5.1. Users (≥5 người dùng)
+### 5.1. Users (10 người dùng)
 
 ```javascript
 // seeds/001_users.js
@@ -453,7 +456,7 @@ exports.seed = async function(knex) {
 };
 ```
 
-### 5.2. Games (7 games)
+### 5.2. Games (8 games)
 
 ```javascript
 // seeds/002_games.js
@@ -545,8 +548,8 @@ exports.seed = async function(knex) {
 
 | Bảng | Số lượng | Mô tả |
 |------|----------|-------|
-| users | 6 | 1 admin + 5 players |
-| games | 7 | Đầy đủ 7 game yêu cầu |
+| users | 10 | 1 admin + 9 players |
+| games | 8 | Đầy đủ 8 game theo yêu cầu |
 | game_sessions | 25 | Player sessions với scores |
 | friends | 12 | Relationships giữa players |
 | messages | 20 | Conversations |

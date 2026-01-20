@@ -204,6 +204,10 @@ npm run migrate:status
 | 04@gmail.com | 111111 | User |
 | 05@gmail.com | 111111 | User |
 | 06@gmail.com | 111111 | User |
+| 07@gmail.com | 111111 | User |
+| 08@gmail.com | 111111 | User |
+| 09@gmail.com | 111111 | User |
+| 10@gmail.com | 111111 | User |
 
 ---
 

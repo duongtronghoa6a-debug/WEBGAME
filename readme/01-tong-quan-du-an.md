@@ -187,7 +187,8 @@ project/
 | 06@gmail.com | player06 | User |
 | 07@gmail.com | player07 | User |
 | 08@gmail.com | player08 | User |
-| 09@gmail.com | player09 | User |
+| 09@gmail.com | MemoryMaster | Player |
+| 10@gmail.com | Match3King | Player |
 
 ### Sample Data
 - 47+ game sessions
