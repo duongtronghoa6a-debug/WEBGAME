@@ -39,13 +39,10 @@ const MemoryGame = () => {
     const [pixels, setPixels] = useState([]);
     const [showExitDialog, setShowExitDialog] = useState(false);
     const [showGameOverDialog, setShowGameOverDialog] = useState(false);
+    const [loadedFromSave, setLoadedFromSave] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Initialize game
-    useEffect(() => {
-        initializeGame();
-    }, []);
-
-    // Load saved game on mount
+    // Load saved game on mount - MUST run before initialize
     useEffect(() => {
         const loadSavedGame = async () => {
             try {
@@ -58,14 +55,24 @@ const MemoryGame = () => {
                         if (state.matchedPairs) setMatchedPairs(state.matchedPairs);
                         if (state.moves) setMoves(state.moves);
                         if (state.score) setScore(state.score);
+                        setLoadedFromSave(true);
                     }
                 }
             } catch (error) {
                 console.error('Load saved game error:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
         loadSavedGame();
     }, []);
+
+    // Initialize ONLY if not loaded from save
+    useEffect(() => {
+        if (!isLoading && !loadedFromSave) {
+            initializeGame();
+        }
+    }, [isLoading, loadedFromSave]);
 
     // Convert cards to LED pixels
     useEffect(() => {

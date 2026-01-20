@@ -40,6 +40,8 @@ const TetrisGame = () => {
     const [showInstructions, setShowInstructions] = useState(true);
     const [showExitDialog, setShowExitDialog] = useState(false);
     const [showGameOverDialog, setShowGameOverDialog] = useState(false);
+    const [loadedFromSave, setLoadedFromSave] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Initialize empty board
     const createEmptyBoard = () => Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(null));
@@ -65,11 +67,7 @@ const TetrisGame = () => {
         setTimeSpent(0);
     }, []);
 
-    useEffect(() => {
-        initializeGame();
-    }, [initializeGame]);
-
-    // Load saved game on mount
+    // Load saved game on mount - MUST run before initialize
     useEffect(() => {
         const loadSavedGame = async () => {
             try {
@@ -82,14 +80,24 @@ const TetrisGame = () => {
                         if (state.score) setScore(state.score);
                         if (state.level) setLevel(state.level);
                         if (state.lines) setLines(state.lines);
+                        setLoadedFromSave(true);
                     }
                 }
             } catch (error) {
                 console.error('Load saved game error:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
         loadSavedGame();
     }, []);
+
+    // Initialize ONLY if not loaded from save
+    useEffect(() => {
+        if (!isLoading && !loadedFromSave) {
+            initializeGame();
+        }
+    }, [isLoading, loadedFromSave, initializeGame]);
 
     // Convert board to LED pixels
     useEffect(() => {

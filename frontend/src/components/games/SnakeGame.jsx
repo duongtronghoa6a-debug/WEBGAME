@@ -38,6 +38,8 @@ const SnakeGame = () => {
     const [pixels, setPixels] = useState([]);
     const [showExitDialog, setShowExitDialog] = useState(false);
     const [showGameOverDialog, setShowGameOverDialog] = useState(false);
+    const [loadedFromSave, setLoadedFromSave] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Convert game state to LED pixels
     useEffect(() => {
@@ -143,7 +145,7 @@ const SnakeGame = () => {
         return () => clearInterval(gameLoopRef.current);
     }, [isPlaying, gameOver, food, boardSize, generateFood, highScore, speed]);
 
-    // Load saved game on mount
+    // Load saved game on mount - MUST run before initialize
     useEffect(() => {
         const loadSavedGame = async () => {
             try {
@@ -156,14 +158,28 @@ const SnakeGame = () => {
                         if (state.food) setFood(state.food);
                         if (state.score) setScore(state.score);
                         if (state.speed) setSpeed(state.speed);
+                        if (state.direction) {
+                            setDirection(state.direction);
+                            directionRef.current = state.direction;
+                        }
+                        setLoadedFromSave(true);
                     }
                 }
             } catch (error) {
                 console.error('Load saved game error:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
         loadSavedGame();
     }, []);
+
+    // Initialize ONLY if not loaded from save
+    useEffect(() => {
+        if (!isLoading && !loadedFromSave) {
+            initializeGame();
+        }
+    }, [isLoading, loadedFromSave, initializeGame]);
 
     // Show game over dialog
     useEffect(() => {

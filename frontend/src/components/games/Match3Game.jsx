@@ -37,13 +37,10 @@ const Match3Game = () => {
     const [showExitDialog, setShowExitDialog] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showGameOverDialog, setShowGameOverDialog] = useState(false);
+    const [loadedFromSave, setLoadedFromSave] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Initialize board
-    useEffect(() => {
-        initializeGame();
-    }, []);
-
-    // Load saved game on mount
+    // Load saved game on mount - MUST run before initialize
     useEffect(() => {
         const loadSavedGame = async () => {
             try {
@@ -55,14 +52,24 @@ const Match3Game = () => {
                         if (state.board) setBoard(state.board);
                         if (state.score) setScore(state.score);
                         if (state.moves) setMoves(state.moves);
+                        setLoadedFromSave(true);
                     }
                 }
             } catch (error) {
                 console.error('Load saved game error:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
         loadSavedGame();
     }, []);
+
+    // Initialize ONLY if not loaded from save
+    useEffect(() => {
+        if (!isLoading && !loadedFromSave) {
+            initializeGame();
+        }
+    }, [isLoading, loadedFromSave]);
 
     // Convert board to LED pixels
     useEffect(() => {
