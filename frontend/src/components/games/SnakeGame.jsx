@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Play, Pause, Save, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
 import GameController from '../common/GameController';
+import GameRatingComment from '../common/GameRatingComment';
 import './SnakeGame.css';
 
 const DIRECTIONS = {
@@ -383,6 +384,9 @@ const SnakeGame = () => {
                     </ul>
                 </div>
             )}
+
+            {/* Rating & Comments */}
+            <GameRatingComment gameId={4} />
         </div>
     );
 };

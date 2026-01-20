@@ -5,6 +5,7 @@ import {
     Pencil, Eraser, Square, Circle, Minus, Lightbulb
 } from 'lucide-react';
 import GameController from '../common/GameController';
+import GameRatingComment from '../common/GameRatingComment';
 import './DrawingBoard.css';
 
 const COLORS = [
@@ -398,6 +399,9 @@ const DrawingBoard = () => {
                     </ul>
                 </div>
             )}
+
+            {/* Rating & Comments */}
+            <GameRatingComment gameId={7} />
         </div>
     );
 };

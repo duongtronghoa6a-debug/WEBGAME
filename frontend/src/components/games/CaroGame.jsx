@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Save, Lightbulb, Play, Pause } from 'lucide-react';
 import api from '../../services/api';
 import GameController from '../common/GameController';
+import GameRatingComment from '../common/GameRatingComment';
 import './CaroGame.css';
 
 // AI Levels
@@ -535,6 +536,9 @@ const CaroGame = () => {
                     <li>Dùng nút Hint nếu cần gợi ý</li>
                 </ul>
             </div>
+
+            {/* Rating & Comments */}
+            <GameRatingComment gameId={parseInt(gameId)} />
         </div>
     );
 };

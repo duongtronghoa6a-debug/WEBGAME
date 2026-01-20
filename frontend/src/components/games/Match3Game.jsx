@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Save, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
 import GameController from '../common/GameController';
+import GameRatingComment from '../common/GameRatingComment';
 import './Match3Game.css';
 
 const CANDY_TYPES = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍒'];
@@ -401,6 +402,9 @@ const Match3Game = () => {
                     </ul>
                 </div>
             )}
+
+            {/* Rating & Comments */}
+            <GameRatingComment gameId={5} />
         </div>
     );
 };

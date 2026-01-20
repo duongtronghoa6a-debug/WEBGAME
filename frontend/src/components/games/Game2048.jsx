@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RotateCcw, Trophy, Clock, ArrowLeft } from 'lucide-react';
 import GameController from '../common/GameController';
+import GameRatingComment from '../common/GameRatingComment';
 import api from '../../services/api';
 import './Game2048.css';
 
@@ -255,6 +256,9 @@ const Game2048 = () => {
                 <h4>📖 Hướng dẫn</h4>
                 <p>Dùng phím mũi tên hoặc nút điều khiển để di chuyển. Gộp các ô cùng số để tạo số lớn hơn. Đạt 2048 để chiến thắng!</p>
             </div>
+
+            {/* Rating & Comments */}
+            <GameRatingComment gameId={18} />
         </div>
     );
 };

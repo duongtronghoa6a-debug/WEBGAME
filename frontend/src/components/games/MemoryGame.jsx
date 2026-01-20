@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Save, Eye, EyeOff, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
 import GameController from '../common/GameController';
+import GameRatingComment from '../common/GameRatingComment';
 import './MemoryGame.css';
 
 const CARD_SYMBOLS = ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🦁', '🐸', '🐵', '🐔', '🦄'];
@@ -343,6 +344,9 @@ const MemoryGame = () => {
                     </ul>
                 </div>
             )}
+
+            {/* Rating & Comments */}
+            <GameRatingComment gameId={6} />
         </div>
     );
 };

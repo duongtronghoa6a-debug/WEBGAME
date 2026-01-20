@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RotateCcw, Trophy, Clock, ArrowLeft, Flag, Bomb } from 'lucide-react';
 import GameController from '../common/GameController';
+import GameRatingComment from '../common/GameRatingComment';
 import './Minesweeper.css';
 
 const Minesweeper = () => {
@@ -265,6 +266,9 @@ const Minesweeper = () => {
                     • Số = số mìn xung quanh. Tránh mìn để thắng!
                 </p>
             </div>
+
+            {/* Rating & Comments */}
+            <GameRatingComment gameId={11} />
         </div>
     );
 };

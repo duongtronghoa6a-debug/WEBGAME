@@ -1,0 +1,262 @@
+.game-rating-comment {
+    background: var(--bg-secondary, #1a1a2e);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+/* Rating Section */
+.rating-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.rating-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.rating-header h3 {
+    font-size: 1.1rem;
+    margin: 0;
+    color: var(--text-primary, #fff);
+}
+
+.avg-rating {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.avg-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffc107;
+}
+
+.avg-total {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #aaa);
+}
+
+.star-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: transform 0.2s, color 0.2s;
+    color: #555;
+}
+
+.star-btn:hover {
+    transform: scale(1.2);
+}
+
+.star-btn.active {
+    color: #ffc107;
+}
+
+.star-btn svg {
+    stroke: #ffc107;
+    transition: fill 0.2s;
+}
+
+.your-rating {
+    margin-left: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #aaa);
+    padding: 0.25rem 0.75rem;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 20px;
+}
+
+/* Comments Section */
+.toggle-comments-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-tertiary, #252545);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    color: var(--text-primary, #fff);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.toggle-comments-btn:hover {
+    background: var(--bg-hover, #303060);
+}
+
+.toggle-icon {
+    margin-left: auto;
+    font-size: 0.8rem;
+}
+
+.comment-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.comment-form input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    background: var(--bg-tertiary, #252545);
+    color: var(--text-primary, #fff);
+    font-size: 0.95rem;
+}
+
+.comment-form input:focus {
+    outline: none;
+    border-color: var(--primary-color, #6366f1);
+}
+
+.comment-form input::placeholder {
+    color: var(--text-secondary, #888);
+}
+
+.submit-comment-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary-color, #6366f1);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.submit-comment-btn:hover:not(:disabled) {
+    background: var(--primary-hover, #4f46e5);
+    transform: scale(1.05);
+}
+
+.submit-comment-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Comments List */
+.comments-list {
+    margin-top: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.no-comments {
+    text-align: center;
+    color: var(--text-secondary, #888);
+    padding: 1.5rem;
+    font-style: italic;
+}
+
+.comment-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: var(--bg-tertiary, #252545);
+    margin-bottom: 0.5rem;
+    transition: background 0.2s;
+}
+
+.comment-item:hover {
+    background: var(--bg-hover, #303060);
+}
+
+.comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary-color, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.comment-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: var(--text-primary, #fff);
+    font-size: 0.9rem;
+}
+
+.comment-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #888);
+}
+
+.comment-text {
+    margin: 0;
+    color: var(--text-secondary, #ccc);
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+/* Scrollbar */
+.comments-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+    background: var(--border-color, rgba(255, 255, 255, 0.2));
+    border-radius: 3px;
+}
+
+.comments-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary, #888);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .game-rating-comment {
+        padding: 1rem;
+    }
+
+    .rating-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .star-rating {
+        justify-content: center;
+    }
+
+    .your-rating {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}

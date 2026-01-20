@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RotateCcw, Trophy, Clock, ArrowLeft, Pause, Play } from 'lucide-react';
 import GameController from '../common/GameController';
+import GameRatingComment from '../common/GameRatingComment';
 import './TetrisGame.css';
 
 // Tetromino shapes
@@ -367,6 +368,9 @@ const TetrisGame = () => {
                     ← →: Di chuyển | ↑/Enter: Xoay | ↓: Rơi nhanh | Space/Hint: Thả nhanh | P: Tạm dừng
                 </p>
             </div>
+
+            {/* Rating & Comments */}
+            <GameRatingComment gameId={8} />
         </div>
     );
 };
