@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
+import ExitDialog from '../common/ExitDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './MemoryGame.css';
 
@@ -35,6 +36,7 @@ const MemoryGame = () => {
     const [cursor, setCursor] = useState({ row: 0, col: 0 });
     const [showInstructions, setShowInstructions] = useState(true);
     const [pixels, setPixels] = useState([]);
+    const [showExitDialog, setShowExitDialog] = useState(false);
 
     // Initialize game
     useEffect(() => {
@@ -106,7 +108,12 @@ const MemoryGame = () => {
                     handleCardFlip(cursor.row * BOARD_SIZE + cursor.col);
                     break;
                 case 'Escape':
-                    navigate('/games');
+                    e.preventDefault();
+                    if (!gameOver) {
+                        setShowExitDialog(true);
+                    } else {
+                        navigate('/games');
+                    }
                     break;
                 case 'h':
                 case 'H':
@@ -180,18 +187,23 @@ const MemoryGame = () => {
         }
     }, [isChecking, flippedCards, matchedPairs, cards, timeSpent]);
 
-    // Save game
-    const saveGame = async () => {
+    // Save game and exit
+    const saveGameAndExit = async () => {
         try {
             await api.post('/games/6/sessions', {
                 state: { cards, matchedPairs, moves, score },
                 score,
                 time_spent: timeSpent
             });
-            alert('Game đã được lưu!');
+            navigate('/games');
         } catch (error) {
             console.error('Save error:', error);
+            navigate('/games');
         }
+    };
+
+    const discardAndExit = () => {
+        navigate('/games');
     };
 
     const formatTime = (seconds) => {
@@ -204,7 +216,13 @@ const MemoryGame = () => {
     const handleLeft = () => setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
     const handleRight = () => setCursor(prev => ({ ...prev, col: Math.min(BOARD_SIZE - 1, prev.col + 1) }));
     const handleEnter = () => handleCardFlip(cursor.row * BOARD_SIZE + cursor.col);
-    const handleBack = () => navigate('/games');
+    const handleBack = () => {
+        if (!gameOver) {
+            setShowExitDialog(true);
+        } else {
+            navigate('/games');
+        }
+    };
     const handleHint = () => setShowInstructions(prev => !prev);
 
     const allMatched = matchedPairs.length === (BOARD_SIZE * BOARD_SIZE) / 2;
@@ -227,10 +245,6 @@ const MemoryGame = () => {
                 <button className="control-btn" onClick={initializeGame}>
                     <RotateCcw size={18} />
                     Chơi lại
-                </button>
-                <button className="control-btn" onClick={saveGame} disabled={isChecking}>
-                    <Save size={18} />
-                    Lưu game
                 </button>
             </div>
 
@@ -283,6 +297,15 @@ const MemoryGame = () => {
             )}
 
             <GameRatingComment gameId={6} />
+
+            {/* Exit Dialog */}
+            <ExitDialog
+                isOpen={showExitDialog}
+                onSave={saveGameAndExit}
+                onDiscard={discardAndExit}
+                onCancel={() => setShowExitDialog(false)}
+                gameName="Cờ Trí Nhớ"
+            />
         </div>
     );
 };

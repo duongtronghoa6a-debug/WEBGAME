@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save, Lightbulb } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
+import ExitDialog from '../common/ExitDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './CaroGame.css';
 
@@ -40,6 +41,7 @@ const CaroGame = () => {
     const [hint, setHint] = useState(null);
     const [gameName, setGameName] = useState('Caro Hàng 5');
     const [pixels, setPixels] = useState([]);
+    const [showExitDialog, setShowExitDialog] = useState(false);
 
     // Game config based on gameId
     useEffect(() => {
@@ -189,7 +191,13 @@ const CaroGame = () => {
                     handleMove(cursor.row, cursor.col);
                     break;
                 case 'Escape':
-                    navigate('/games');
+                    e.preventDefault();
+                    // If game in progress, show exit dialog
+                    if (isPlaying && !gameOver) {
+                        setShowExitDialog(true);
+                    } else {
+                        navigate('/games');
+                    }
                     break;
                 case 'h':
                 case 'H':
@@ -223,7 +231,13 @@ const CaroGame = () => {
     };
 
     const handleEnter = () => handleMove(cursor.row, cursor.col);
-    const handleBack = () => navigate('/games');
+    const handleBack = () => {
+        if (isPlaying && !gameOver) {
+            setShowExitDialog(true);
+        } else {
+            navigate('/games');
+        }
+    };
 
     const initializeGame = () => {
         const logicalRows = parseInt(gameId) === 3 ? 3 : boardSize.rows;
@@ -461,8 +475,8 @@ const CaroGame = () => {
         }
     };
 
-    // Save game
-    const saveGame = async () => {
+    // Save game and exit
+    const saveGameAndExit = async () => {
         try {
             const gameState = {
                 board,
@@ -479,16 +493,19 @@ const CaroGame = () => {
                     time_spent: timeSpent
                 });
             } else {
-                const res = await api.post(`/games/${gameId}/sessions`, {
+                await api.post(`/games/${gameId}/sessions`, {
                     state: gameState
                 });
-                setSessionId(res.data.data.id);
             }
-            alert('Game đã được lưu!');
+            navigate('/games');
         } catch (error) {
             console.error('Save error:', error);
-            alert('Lỗi khi lưu game');
+            navigate('/games');
         }
+    };
+
+    const discardAndExit = () => {
+        navigate('/games');
     };
 
     // Format time
@@ -548,10 +565,6 @@ const CaroGame = () => {
                         <Lightbulb size={18} />
                         Gợi ý
                     </button>
-                    <button className="control-btn" onClick={saveGame}>
-                        <Save size={18} />
-                        Lưu game
-                    </button>
                 </div>
             </div>
 
@@ -606,6 +619,15 @@ const CaroGame = () => {
 
             {/* Rating & Comments */}
             <GameRatingComment gameId={parseInt(gameId)} />
+
+            {/* Exit Dialog */}
+            <ExitDialog
+                isOpen={showExitDialog}
+                onSave={saveGameAndExit}
+                onDiscard={discardAndExit}
+                onCancel={() => setShowExitDialog(false)}
+                gameName={gameName}
+            />
         </div>
     );
 };

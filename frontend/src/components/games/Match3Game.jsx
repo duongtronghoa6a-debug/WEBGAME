@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
+import ExitDialog from '../common/ExitDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './Match3Game.css';
 
@@ -32,6 +33,8 @@ const Match3Game = () => {
     const [cursor, setCursor] = useState({ row: 0, col: 0 });
     const [showInstructions, setShowInstructions] = useState(true);
     const [pixels, setPixels] = useState([]);
+    const [showExitDialog, setShowExitDialog] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     // Initialize board
     useEffect(() => {
@@ -99,7 +102,12 @@ const Match3Game = () => {
                     handleCellSelect(cursor.row, cursor.col);
                     break;
                 case 'Escape':
-                    navigate('/games');
+                    e.preventDefault();
+                    if (!gameOver && moves > 0) {
+                        setShowExitDialog(true);
+                    } else {
+                        navigate('/games');
+                    }
                     break;
                 case 'h':
                 case 'H':
@@ -275,18 +283,23 @@ const Match3Game = () => {
         }
     };
 
-    // Save game
-    const saveGame = async () => {
+    // Save game and exit
+    const saveGameAndExit = async () => {
         try {
             await api.post('/games/5/sessions', {
                 state: { board, score, moves },
                 score,
                 time_spent: timeSpent
             });
-            alert('Game đã được lưu!');
+            navigate('/games');
         } catch (error) {
             console.error('Save error:', error);
+            navigate('/games');
         }
+    };
+
+    const discardAndExit = () => {
+        navigate('/games');
     };
 
     const formatTime = (seconds) => {
@@ -299,7 +312,13 @@ const Match3Game = () => {
     const handleLeft = () => setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
     const handleRight = () => setCursor(prev => ({ ...prev, col: Math.min(BOARD_SIZE - 1, prev.col + 1) }));
     const handleEnter = () => handleCellSelect(cursor.row, cursor.col);
-    const handleBack = () => navigate('/games');
+    const handleBack = () => {
+        if (!gameOver && moves > 0) {
+            setShowExitDialog(true);
+        } else {
+            navigate('/games');
+        }
+    };
     const handleHint = () => setShowInstructions(prev => !prev);
 
     return (
@@ -320,10 +339,6 @@ const Match3Game = () => {
                 <button className="control-btn" onClick={initializeGame}>
                     <RotateCcw size={18} />
                     Chơi lại
-                </button>
-                <button className="control-btn" onClick={saveGame} disabled={isAnimating}>
-                    <Save size={18} />
-                    Lưu game
                 </button>
                 {combo > 1 && (
                     <div className="combo-display">
@@ -384,6 +399,15 @@ const Match3Game = () => {
             )}
 
             <GameRatingComment gameId={5} />
+
+            {/* Exit Dialog */}
+            <ExitDialog
+                isOpen={showExitDialog}
+                onSave={saveGameAndExit}
+                onDiscard={discardAndExit}
+                onCancel={() => setShowExitDialog(false)}
+                gameName="Ghép Hàng 3"
+            />
         </div>
     );
 };

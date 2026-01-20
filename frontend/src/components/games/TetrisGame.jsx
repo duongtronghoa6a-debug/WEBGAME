@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Play, Pause, Save } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Play, Pause } from 'lucide-react';
 import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
+import ExitDialog from '../common/ExitDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './TetrisGame.css';
 
@@ -36,6 +37,7 @@ const TetrisGame = () => {
     const [timeSpent, setTimeSpent] = useState(0);
     const [pixels, setPixels] = useState([]);
     const [showInstructions, setShowInstructions] = useState(true);
+    const [showExitDialog, setShowExitDialog] = useState(false);
 
     // Initialize empty board
     const createEmptyBoard = () => Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(null));
@@ -257,7 +259,15 @@ const TetrisGame = () => {
                     setIsPlaying(prev => !prev);
                     break;
                 case 'Escape':
-                    navigate('/games');
+                    e.preventDefault();
+                    if (isPlaying) {
+                        setIsPlaying(false);
+                        setShowExitDialog(true);
+                    } else if (!gameOver) {
+                        setShowExitDialog(true);
+                    } else {
+                        navigate('/games');
+                    }
                     break;
                 case 'h':
                 case 'H':
@@ -277,21 +287,35 @@ const TetrisGame = () => {
         if (gameOver) initializeGame();
         setIsPlaying(prev => !prev);
     };
-    const handleBack = () => navigate('/games');
+    const handleBack = () => {
+        if (isPlaying) {
+            setIsPlaying(false);
+            setShowExitDialog(true);
+        } else if (!gameOver) {
+            setShowExitDialog(true);
+        } else {
+            navigate('/games');
+        }
+    };
     const handleHint = () => setShowInstructions(prev => !prev);
 
-    // Save game
-    const saveGame = async () => {
+    // Save game and exit
+    const saveGameAndExit = async () => {
         try {
             await api.post('/games/8/sessions', {
                 state: { board, score, level, lines },
                 score,
                 time_spent: timeSpent
             });
-            alert('Game đã được lưu!');
+            navigate('/games');
         } catch (error) {
             console.error('Save error:', error);
+            navigate('/games');
         }
+    };
+
+    const discardAndExit = () => {
+        navigate('/games');
     };
 
     const formatTime = (ticks) => {
@@ -323,10 +347,6 @@ const TetrisGame = () => {
                 <button className="control-btn" onClick={initializeGame}>
                     <RotateCcw size={18} />
                     Reset
-                </button>
-                <button className="control-btn" onClick={saveGame} disabled={isPlaying}>
-                    <Save size={18} />
-                    Lưu game
                 </button>
             </div>
 
@@ -377,6 +397,15 @@ const TetrisGame = () => {
             )}
 
             <GameRatingComment gameId={8} />
+
+            {/* Exit Dialog */}
+            <ExitDialog
+                isOpen={showExitDialog}
+                onSave={saveGameAndExit}
+                onDiscard={discardAndExit}
+                onCancel={() => setShowExitDialog(false)}
+                gameName="Tetris"
+            />
         </div>
     );
 };

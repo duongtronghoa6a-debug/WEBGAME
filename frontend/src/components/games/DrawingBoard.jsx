@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save, Trash2, Eraser } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Trash2, Eraser } from 'lucide-react';
 import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
+import ExitDialog from '../common/ExitDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './DrawingBoard.css';
 
@@ -44,6 +45,7 @@ const DrawingBoard = () => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [timeSpent, setTimeSpent] = useState(0);
     const [showInstructions, setShowInstructions] = useState(true);
+    const [showExitDialog, setShowExitDialog] = useState(false);
 
     // Initialize canvas
     useEffect(() => {
@@ -92,7 +94,14 @@ const DrawingBoard = () => {
                     cycleColor();
                     break;
                 case 'Escape':
-                    navigate('/games');
+                    e.preventDefault();
+                    // Check if canvas has any content
+                    const hasContent = pixels.some(row => row.some(cell => cell !== null));
+                    if (hasContent) {
+                        setShowExitDialog(true);
+                    } else {
+                        navigate('/games');
+                    }
                     break;
                 case 'h':
                 case 'H':
@@ -142,21 +151,34 @@ const DrawingBoard = () => {
     const handleLeft = () => moveCursor(-1, 0);
     const handleRight = () => moveCursor(1, 0);
     const handleEnter = () => paintOrErase();
-    const handleBack = () => navigate('/games');
+    const handleBack = () => {
+        // Check if canvas has any content
+        const hasContent = pixels.some(row => row.some(cell => cell !== null));
+        if (hasContent) {
+            setShowExitDialog(true);
+        } else {
+            navigate('/games');
+        }
+    };
     const handleHint = () => cycleColor();
 
-    // Save artwork
-    const saveArtwork = async () => {
+    // Save artwork and exit
+    const saveArtworkAndExit = async () => {
         try {
             await api.post('/games/7/sessions', {
                 state: { pixels },
                 score: 0,
                 time_spent: timeSpent
             });
-            alert('Bức vẽ đã được lưu!');
+            navigate('/games');
         } catch (error) {
             console.error('Save error:', error);
+            navigate('/games');
         }
+    };
+
+    const discardAndExit = () => {
+        navigate('/games');
     };
 
     const formatTime = (seconds) => {
@@ -190,10 +212,6 @@ const DrawingBoard = () => {
                 <button className="control-btn" onClick={clearCanvas}>
                     <Trash2 size={18} />
                     Xóa tất cả
-                </button>
-                <button className="control-btn" onClick={saveArtwork}>
-                    <Save size={18} />
-                    Lưu
                 </button>
                 <button
                     className={`control-btn ${isDrawing ? 'active' : ''}`}
@@ -263,6 +281,15 @@ const DrawingBoard = () => {
             )}
 
             <GameRatingComment gameId={7} />
+
+            {/* Exit Dialog */}
+            <ExitDialog
+                isOpen={showExitDialog}
+                onSave={saveArtworkAndExit}
+                onDiscard={discardAndExit}
+                onCancel={() => setShowExitDialog(false)}
+                gameName="Bảng Vẽ"
+            />
         </div>
     );
 };
