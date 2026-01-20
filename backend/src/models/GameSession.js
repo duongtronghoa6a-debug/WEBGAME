@@ -66,11 +66,24 @@ class GameSession {
      * Get user's saved games (incomplete sessions)
      */
     static async getUserSavedGames(userId, { page = 1, limit = 10, completed }) {
-        let query = db(this.tableName)
+        let baseQuery = db(this.tableName)
             .where({ user_id: userId })
-            .join('games', 'games.id', '=', `${this.tableName}.game_id`)
+            .join('games', 'games.id', '=', `${this.tableName}.game_id`);
+
+        if (completed !== undefined) {
+            baseQuery = baseQuery.where({ completed });
+        }
+
+        // Count query - separate to avoid GROUP BY conflict
+        const [{ count }] = await baseQuery.clone().count();
+        const total = parseInt(count);
+
+        // Data query with select
+        const offset = (page - 1) * limit;
+        const sessions = await baseQuery.clone()
             .select(
                 `${this.tableName}.id`,
+                `${this.tableName}.state`,
                 `${this.tableName}.score`,
                 `${this.tableName}.time_spent`,
                 `${this.tableName}.completed`,
@@ -79,18 +92,7 @@ class GameSession {
                 'games.id as game_id',
                 'games.name as game_name',
                 'games.type as game_type'
-            );
-
-        if (completed !== undefined) {
-            query = query.where({ completed });
-        }
-
-        const countQuery = query.clone();
-        const [{ count }] = await countQuery.count();
-        const total = parseInt(count);
-
-        const offset = (page - 1) * limit;
-        const sessions = await query
+            )
             .orderBy(`${this.tableName}.updated_at`, 'desc')
             .limit(limit)
             .offset(offset);
