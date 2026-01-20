@@ -46,13 +46,37 @@ const DrawingBoard = () => {
     const [timeSpent, setTimeSpent] = useState(0);
     const [showInstructions, setShowInstructions] = useState(true);
     const [showExitDialog, setShowExitDialog] = useState(false);
+    const [loadedFromSave, setLoadedFromSave] = useState(false);
 
-    // Initialize canvas
+    // Load saved artwork on mount OR initialize empty canvas
     useEffect(() => {
-        const emptyCanvas = Array(BOARD_SIZE).fill(null).map(() =>
-            Array(BOARD_SIZE).fill(null)
-        );
-        setPixels(emptyCanvas);
+        const loadSavedGame = async () => {
+            try {
+                const res = await api.get('/games/sessions?completed=false');
+                if (res.data.success && res.data.data && res.data.data.length > 0) {
+                    const saved = res.data.data.find(s => s.game_id === 7);
+                    if (saved && saved.state && saved.state.pixels) {
+                        setPixels(saved.state.pixels);
+                        if (saved.state.currentColor !== undefined) {
+                            setCurrentColor(saved.state.currentColor);
+                        }
+                        if (saved.state.cursor) {
+                            setCursor(saved.state.cursor);
+                        }
+                        setLoadedFromSave(true);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Load saved artwork error:', error);
+            }
+            // Initialize empty canvas if no saved data
+            const emptyCanvas = Array(BOARD_SIZE).fill(null).map(() =>
+                Array(BOARD_SIZE).fill(null)
+            );
+            setPixels(emptyCanvas);
+        };
+        loadSavedGame();
     }, []);
 
     // Timer
@@ -169,7 +193,7 @@ const DrawingBoard = () => {
     const saveArtworkAndExit = async () => {
         try {
             await api.post('/games/7/sessions', {
-                state: { pixels },
+                state: { pixels, currentColor, cursor },
                 score: 0,
                 time_spent: timeSpent
             });

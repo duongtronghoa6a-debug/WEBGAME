@@ -80,6 +80,10 @@ const TetrisGame = () => {
                         if (state.score) setScore(state.score);
                         if (state.level) setLevel(state.level);
                         if (state.lines) setLines(state.lines);
+                        if (state.currentPiece) setCurrentPiece(state.currentPiece);
+                        if (state.piecePosition) setPiecePosition(state.piecePosition);
+                        if (state.nextPiece) setNextPiece(state.nextPiece);
+                        if (state.timeSpent) setTimeSpent(state.timeSpent);
                         setLoadedFromSave(true);
                     }
                 }
@@ -336,7 +340,16 @@ const TetrisGame = () => {
     const saveGameAndExit = async () => {
         try {
             await api.post('/games/8/sessions', {
-                state: { board, score, level, lines },
+                state: {
+                    board,
+                    score,
+                    level,
+                    lines,
+                    currentPiece,
+                    piecePosition,
+                    nextPiece,
+                    timeSpent
+                },
                 score,
                 time_spent: timeSpent
             });
