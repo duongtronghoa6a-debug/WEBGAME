@@ -73,15 +73,30 @@
     border: 2px solid var(--border-color);
     cursor: pointer;
     transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
 }
 
 .color-btn:hover {
     transform: scale(1.1);
 }
 
-.color-btn.active {
+.color-btn.selected {
     border-color: var(--text-primary);
-    box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--color-primary);
+    box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--color-primary), 0 0 12px currentColor;
+    transform: scale(1.15);
+}
+
+.color-btn.eraser-btn {
+    border-style: dashed;
+    color: #888;
+}
+
+.color-btn.eraser-btn.selected {
+    border-color: #888;
+    box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px #888;
 }
 
 .tool-group.actions {

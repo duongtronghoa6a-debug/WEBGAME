@@ -10,6 +10,7 @@ const LEDMatrix = ({
     rows = 15,
     cols = 15,
     cursor = null,
+    cursorColor = null, // Custom cursor color
     dotSize = 'medium',
     showBorder = true,
     className = ''
@@ -43,7 +44,10 @@ const LEDMatrix = ({
                             <div
                                 key={`${rowIndex}-${colIndex}`}
                                 className={`led-dot ${isCursor ? 'cursor' : ''} ${color ? 'active' : ''}`}
-                                style={color ? { backgroundColor: color } : undefined}
+                                style={{
+                                    ...(color ? { backgroundColor: color } : {}),
+                                    ...(isCursor && cursorColor ? { outlineColor: cursorColor, boxShadow: `0 0 10px ${cursorColor}, 0 0 20px ${cursorColor}` } : {})
+                                }}
                             />
                         );
                     })

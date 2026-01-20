@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Save, Trash2, Eraser } from 'lucide-react';
 import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
 import './DrawingBoard.css';
 
-// Drawing colors palette
+// Drawing colors palette - includes eraser as first item
 const COLORS = [
+    null, // Eraser (background color)
     LED_COLORS.CANDY_RED,
     LED_COLORS.CANDY_ORANGE,
     LED_COLORS.CANDY_YELLOW,
@@ -19,6 +20,19 @@ const COLORS = [
     LED_COLORS.PLAYER_1,
 ];
 
+// Color names for display
+const COLOR_NAMES = [
+    'Tẩy',
+    'Đỏ',
+    'Cam',
+    'Vàng',
+    'Xanh lá',
+    'Xanh dương',
+    'Tím',
+    'Trắng',
+    'Hồng',
+];
+
 const BOARD_SIZE = 16;
 
 const DrawingBoard = () => {
@@ -26,7 +40,7 @@ const DrawingBoard = () => {
 
     const [pixels, setPixels] = useState([]);
     const [cursor, setCursor] = useState({ row: 8, col: 8 });
-    const [currentColor, setCurrentColor] = useState(0);
+    const [currentColor, setCurrentColor] = useState(1); // Start with red, not eraser
     const [isDrawing, setIsDrawing] = useState(false);
     const [timeSpent, setTimeSpent] = useState(0);
     const [showInstructions, setShowInstructions] = useState(true);
@@ -70,7 +84,7 @@ const DrawingBoard = () => {
                 case 'Enter':
                 case ' ':
                     e.preventDefault();
-                    togglePixel();
+                    paintOrErase();
                     break;
                 case 'c':
                 case 'C':
@@ -90,7 +104,7 @@ const DrawingBoard = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cursor, currentColor, pixels]);
+    }, [cursor, currentColor, pixels, isDrawing]);
 
     const moveCursor = (dx, dy) => {
         setCursor(prev => ({
@@ -100,25 +114,14 @@ const DrawingBoard = () => {
 
         // If drawing mode is on, paint while moving
         if (isDrawing) {
-            paintPixel();
+            paintOrErase();
         }
     };
 
-    const togglePixel = () => {
+    const paintOrErase = () => {
         setPixels(prev => {
             const newPixels = prev.map(row => [...row]);
-            if (newPixels[cursor.row][cursor.col] === COLORS[currentColor]) {
-                newPixels[cursor.row][cursor.col] = null; // Erase
-            } else {
-                newPixels[cursor.row][cursor.col] = COLORS[currentColor];
-            }
-            return newPixels;
-        });
-    };
-
-    const paintPixel = () => {
-        setPixels(prev => {
-            const newPixels = prev.map(row => [...row]);
+            // If eraser selected (index 0), set to null
             newPixels[cursor.row][cursor.col] = COLORS[currentColor];
             return newPixels;
         });
@@ -138,7 +141,7 @@ const DrawingBoard = () => {
     // Controller handlers
     const handleLeft = () => moveCursor(-1, 0);
     const handleRight = () => moveCursor(1, 0);
-    const handleEnter = () => togglePixel();
+    const handleEnter = () => paintOrErase();
     const handleBack = () => navigate('/games');
     const handleHint = () => cycleColor();
 
@@ -160,6 +163,14 @@ const DrawingBoard = () => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    // Get current cursor color for highlight
+    const getCursorColor = () => {
+        if (currentColor === 0) {
+            return '#888888'; // Gray for eraser
+        }
+        return COLORS[currentColor] || '#ffd93d';
     };
 
     return (
@@ -194,23 +205,26 @@ const DrawingBoard = () => {
 
             {/* Color palette */}
             <div className="color-palette">
-                <span>Màu hiện tại:</span>
+                <span>Màu: <strong>{COLOR_NAMES[currentColor]}</strong></span>
                 <div className="color-options">
                     {COLORS.map((color, index) => (
                         <button
                             key={index}
-                            className={`color-btn ${index === currentColor ? 'selected' : ''}`}
-                            style={{ backgroundColor: color }}
+                            className={`color-btn ${index === currentColor ? 'selected' : ''} ${index === 0 ? 'eraser-btn' : ''}`}
+                            style={{ backgroundColor: color || '#2d2d44' }}
                             onClick={() => setCurrentColor(index)}
-                        />
+                            title={COLOR_NAMES[index]}
+                        >
+                            {index === 0 && <Eraser size={14} />}
+                        </button>
                     ))}
                 </div>
-                <small>(Nhấn H/Hint để đổi màu)</small>
+                <small>(Nhấn H để đổi màu)</small>
             </div>
 
             <div className="game-status">
                 <div className="status-message">
-                    🎨 Di chuyển bằng ← ↑ → ↓, Enter để vẽ
+                    🎨 Di chuyển: ← ↑ → ↓ | Vẽ: Enter | Đổi màu: H
                 </div>
             </div>
 
@@ -220,6 +234,7 @@ const DrawingBoard = () => {
                     rows={BOARD_SIZE}
                     cols={BOARD_SIZE}
                     cursor={cursor}
+                    cursorColor={getCursorColor()}
                     dotSize="medium"
                     showBorder={true}
                 />
@@ -239,8 +254,9 @@ const DrawingBoard = () => {
                     <h3>Hướng dẫn</h3>
                     <ul>
                         <li>← ↑ → ↓ để di chuyển cursor</li>
-                        <li>Enter để vẽ/xóa pixel</li>
-                        <li>H hoặc Hint để đổi màu</li>
+                        <li>Enter để vẽ hoặc xóa</li>
+                        <li>H để đổi màu (cursor sẽ đổi màu theo)</li>
+                        <li>Chọn Tẩy (🧹) để xóa pixel</li>
                         <li>Bật "Đang vẽ" để vẽ khi di chuyển</li>
                     </ul>
                 </div>

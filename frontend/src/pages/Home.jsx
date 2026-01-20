@@ -16,7 +16,7 @@ const Home = () => {
                         <br />Web Application
                     </h1>
                     <p className="hero-description">
-                        Chơi 10 game hấp dẫn: Caro, Snake, Match-3, Tetris, Memory, 2048 và nhiều hơn nữa!
+                        Chơi 8 game hấp dẫn: Caro, Snake, Match-3, Tetris, Memory và nhiều hơn nữa!
                         Kết nối với bạn bè, leo rank và chinh phục thành tựu.
                     </p>
                     <div className="hero-buttons">
@@ -39,7 +39,7 @@ const Home = () => {
                 </div>
                 <div className="hero-visual">
                     <div className="game-grid-preview">
-                        {['🎯', '🐍', '🍬', '🧠', '🧱', '♟️', '🎨', '🚀', '💣'].map((emoji, i) => (
+                        {['🎯', '🐍', '🍬', '🧠', '🧱', '🎨', '⭕', '🎮'].map((emoji, i) => (
                             <div key={i} className="preview-cell" style={{ animationDelay: `${i * 0.1}s` }}>
                                 {emoji}
                             </div>
@@ -54,8 +54,8 @@ const Home = () => {
                 <div className="features-grid">
                     <div className="feature-card">
                         <div className="feature-icon"><Gamepad2 size={32} /></div>
-                        <h3>10 Games</h3>
-                        <p>Caro, Snake, Match-3, Tetris, Memory, 2048, Minesweeper và nhiều hơn</p>
+                        <h3>8 Games</h3>
+                        <p>Caro, Snake, Match-3, Tetris, Memory, Bảng vẽ và nhiều hơn</p>
                     </div>
                     <div className="feature-card">
                         <div className="feature-icon"><Users size={32} /></div>
@@ -95,8 +95,6 @@ const Home = () => {
                         { emoji: '🍬', name: 'Match-3', desc: 'Ghép 3 viên cùng màu' },
                         { emoji: '🧠', name: 'Memory', desc: 'Trò chơi trí nhớ' },
                         { emoji: '🧱', name: 'Tetris', desc: 'Xếp gạch huyền thoại' },
-                        { emoji: '🔢', name: '2048', desc: 'Ghép số gấp đôi' },
-                        { emoji: '💣', name: 'Minesweeper', desc: 'Dò mìn' },
                         { emoji: '🎨', name: 'Drawing', desc: 'Bảng vẽ tự do' },
                     ].map((game, i) => (
                         <div key={i} className="game-preview-card">
