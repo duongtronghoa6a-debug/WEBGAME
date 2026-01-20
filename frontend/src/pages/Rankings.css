@@ -7,8 +7,15 @@
 .filter-section {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
 
 .filter-section label {
@@ -24,6 +31,7 @@
     color: var(--text-primary);
     font-size: var(--font-size-md);
     cursor: pointer;
+    min-width: 160px;
 }
 
 /* Stats Cards */

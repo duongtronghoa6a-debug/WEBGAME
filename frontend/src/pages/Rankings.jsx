@@ -7,6 +7,7 @@ import './Rankings.css';
 const Rankings = () => {
     const [rankings, setRankings] = useState([]);
     const [selectedGame, setSelectedGame] = useState('all');
+    const [filterType, setFilterType] = useState('all'); // 'all', 'friends', 'personal'
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -17,7 +18,7 @@ const Rankings = () => {
     useEffect(() => {
         fetchGames();
         fetchRankings();
-    }, [selectedGame]);
+    }, [selectedGame, filterType]);
 
     const fetchGames = async () => {
         try {
@@ -35,10 +36,24 @@ const Rankings = () => {
     };
 
     const fetchRankings = async () => {
+        setLoading(true);
         try {
-            const url = selectedGame === 'all'
-                ? '/rankings'
-                : `/rankings?game_id=${selectedGame}`;
+            let url;
+            const gameParam = selectedGame === 'all' ? '0' : selectedGame;
+
+            switch (filterType) {
+                case 'friends':
+                    url = `/rankings/${gameParam}/friends`;
+                    break;
+                case 'personal':
+                    url = `/rankings/${gameParam}/personal`;
+                    break;
+                default:
+                    url = selectedGame === 'all'
+                        ? '/rankings'
+                        : `/rankings/${selectedGame}`;
+            }
+
             const res = await api.get(url);
             setRankings(res.data.data || []);
         } catch (error) {
@@ -50,11 +65,6 @@ const Rankings = () => {
                 { rank: 3, username: 'caro_master', total_score: 10800, games_played: 40, avg_score: 270 },
                 { rank: 4, username: 'snake_king', total_score: 9500, games_played: 38, avg_score: 250 },
                 { rank: 5, username: 'memory_pro', total_score: 8200, games_played: 35, avg_score: 234 },
-                { rank: 6, username: 'gamer_123', total_score: 7500, games_played: 30, avg_score: 250 },
-                { rank: 7, username: 'newbie_player', total_score: 5000, games_played: 25, avg_score: 200 },
-                { rank: 8, username: 'casual_gamer', total_score: 4200, games_played: 20, avg_score: 210 },
-                { rank: 9, username: 'fun_player', total_score: 3500, games_played: 18, avg_score: 194 },
-                { rank: 10, username: 'beginner', total_score: 2000, games_played: 15, avg_score: 133 },
             ]);
         } finally {
             setLoading(false);
@@ -95,13 +105,23 @@ const Rankings = () => {
 
             {/* Filter */}
             <div className="filter-section">
-                <label>Lọc theo game:</label>
-                <select value={selectedGame} onChange={(e) => setSelectedGame(e.target.value)}>
-                    <option value="all">Tất cả games</option>
-                    {games.map(game => (
-                        <option key={game.id} value={game.id}>{game.name}</option>
-                    ))}
-                </select>
+                <div className="filter-group">
+                    <label>Lọc theo game:</label>
+                    <select value={selectedGame} onChange={(e) => setSelectedGame(e.target.value)}>
+                        <option value="all">Tất cả games</option>
+                        {games.map(game => (
+                            <option key={game.id} value={game.id}>{game.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="filter-group">
+                    <label>Phạm vi:</label>
+                    <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+                        <option value="all">🌍 Tất cả người chơi</option>
+                        <option value="friends">👥 Bạn bè</option>
+                        <option value="personal">👤 Cá nhân</option>
+                    </select>
+                </div>
             </div>
 
             {/* Stats Cards */}
