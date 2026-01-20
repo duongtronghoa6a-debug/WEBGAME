@@ -5,6 +5,7 @@ import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import ExitDialog from '../common/ExitDialog';
+import GameOverDialog from '../common/GameOverDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './SnakeGame.css';
 
@@ -36,6 +37,7 @@ const SnakeGame = () => {
     const [showInstructions, setShowInstructions] = useState(true);
     const [pixels, setPixels] = useState([]);
     const [showExitDialog, setShowExitDialog] = useState(false);
+    const [showGameOverDialog, setShowGameOverDialog] = useState(false);
 
     // Convert game state to LED pixels
     useEffect(() => {
@@ -140,6 +142,38 @@ const SnakeGame = () => {
 
         return () => clearInterval(gameLoopRef.current);
     }, [isPlaying, gameOver, food, boardSize, generateFood, highScore, speed]);
+
+    // Load saved game on mount
+    useEffect(() => {
+        const loadSavedGame = async () => {
+            try {
+                const res = await api.get('/games/sessions?completed=false');
+                if (res.data.success && res.data.data && res.data.data.length > 0) {
+                    const saved = res.data.data.find(s => s.game_id === 4);
+                    if (saved && saved.state) {
+                        const state = saved.state;
+                        if (state.snake) setSnake(state.snake);
+                        if (state.food) setFood(state.food);
+                        if (state.score) setScore(state.score);
+                        if (state.speed) setSpeed(state.speed);
+                    }
+                }
+            } catch (error) {
+                console.error('Load saved game error:', error);
+            }
+        };
+        loadSavedGame();
+    }, []);
+
+    // Show game over dialog
+    useEffect(() => {
+        if (gameOver) {
+            const timer = setTimeout(() => {
+                setShowGameOverDialog(true);
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [gameOver]);
 
     // Keyboard controls
     useEffect(() => {
@@ -381,6 +415,20 @@ const SnakeGame = () => {
                 onSave={saveGameAndExit}
                 onDiscard={discardAndExit}
                 onCancel={() => setShowExitDialog(false)}
+                gameName="Rắn Săn Mồi"
+            />
+
+            {/* Game Over Dialog */}
+            <GameOverDialog
+                isOpen={showGameOverDialog}
+                isWin={false}
+                score={score}
+                message={`Điểm cao nhất: ${highScore}`}
+                onPlayAgain={() => {
+                    setShowGameOverDialog(false);
+                    initializeGame();
+                }}
+                onExit={() => navigate('/games')}
                 gameName="Rắn Săn Mồi"
             />
         </div>

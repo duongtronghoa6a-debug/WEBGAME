@@ -5,6 +5,7 @@ import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import ExitDialog from '../common/ExitDialog';
+import GameOverDialog from '../common/GameOverDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './Match3Game.css';
 
@@ -35,6 +36,7 @@ const Match3Game = () => {
     const [pixels, setPixels] = useState([]);
     const [showExitDialog, setShowExitDialog] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [showGameOverDialog, setShowGameOverDialog] = useState(false);
 
     // Initialize board
     useEffect(() => {
@@ -72,6 +74,7 @@ const Match3Game = () => {
     useEffect(() => {
         if (moves <= 0 && !isAnimating) {
             setGameOver(true);
+            setShowGameOverDialog(true);
         }
     }, [moves, isAnimating]);
 
@@ -408,6 +411,20 @@ const Match3Game = () => {
                 onSave={saveGameAndExit}
                 onDiscard={discardAndExit}
                 onCancel={() => setShowExitDialog(false)}
+                gameName="Ghép Hàng 3"
+            />
+
+            {/* Game Over Dialog */}
+            <GameOverDialog
+                isOpen={showGameOverDialog}
+                isWin={false}
+                score={score}
+                message={`Bạn đã hết lượt!`}
+                onPlayAgain={() => {
+                    setShowGameOverDialog(false);
+                    initializeGame();
+                }}
+                onExit={() => navigate('/games')}
                 gameName="Ghép Hàng 3"
             />
         </div>

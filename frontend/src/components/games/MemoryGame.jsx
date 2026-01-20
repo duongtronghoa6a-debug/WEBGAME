@@ -5,6 +5,7 @@ import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import ExitDialog from '../common/ExitDialog';
+import GameOverDialog from '../common/GameOverDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './MemoryGame.css';
 
@@ -37,6 +38,7 @@ const MemoryGame = () => {
     const [showInstructions, setShowInstructions] = useState(true);
     const [pixels, setPixels] = useState([]);
     const [showExitDialog, setShowExitDialog] = useState(false);
+    const [showGameOverDialog, setShowGameOverDialog] = useState(false);
 
     // Initialize game
     useEffect(() => {
@@ -177,6 +179,7 @@ const MemoryGame = () => {
                     if (matchedPairs.length + 1 === (BOARD_SIZE * BOARD_SIZE) / 2) {
                         setGameOver(true);
                         setScore(prev => prev + Math.max(0, 500 - timeSpent));
+                        setTimeout(() => setShowGameOverDialog(true), 300);
                     }
                 }, 500);
             } else {
@@ -306,6 +309,20 @@ const MemoryGame = () => {
                 onSave={saveGameAndExit}
                 onDiscard={discardAndExit}
                 onCancel={() => setShowExitDialog(false)}
+                gameName="Cờ Trí Nhớ"
+            />
+
+            {/* Game Over Dialog */}
+            <GameOverDialog
+                isOpen={showGameOverDialog}
+                isWin={true}
+                score={score}
+                message={`Hoàn thành trong ${moves} lượt!`}
+                onPlayAgain={() => {
+                    setShowGameOverDialog(false);
+                    initializeGame();
+                }}
+                onExit={() => navigate('/games')}
                 gameName="Cờ Trí Nhớ"
             />
         </div>

@@ -5,6 +5,7 @@ import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import ExitDialog from '../common/ExitDialog';
+import GameOverDialog from '../common/GameOverDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './TetrisGame.css';
 
@@ -38,6 +39,7 @@ const TetrisGame = () => {
     const [pixels, setPixels] = useState([]);
     const [showInstructions, setShowInstructions] = useState(true);
     const [showExitDialog, setShowExitDialog] = useState(false);
+    const [showGameOverDialog, setShowGameOverDialog] = useState(false);
 
     // Initialize empty board
     const createEmptyBoard = () => Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(null));
@@ -146,6 +148,7 @@ const TetrisGame = () => {
         if (checkCollision(newPiece, newPos, newBoard)) {
             setGameOver(true);
             setIsPlaying(false);
+            setTimeout(() => setShowGameOverDialog(true), 300);
         } else {
             setCurrentPiece(newPiece);
             setPiecePosition(newPos);
@@ -406,6 +409,20 @@ const TetrisGame = () => {
                 onSave={saveGameAndExit}
                 onDiscard={discardAndExit}
                 onCancel={() => setShowExitDialog(false)}
+                gameName="Tetris"
+            />
+
+            {/* Game Over Dialog */}
+            <GameOverDialog
+                isOpen={showGameOverDialog}
+                isWin={false}
+                score={score}
+                message={`Lines: ${lines} | Level: ${level}`}
+                onPlayAgain={() => {
+                    setShowGameOverDialog(false);
+                    initializeGame();
+                }}
+                onExit={() => navigate('/games')}
                 gameName="Tetris"
             />
         </div>

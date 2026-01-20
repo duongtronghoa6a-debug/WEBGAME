@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
 import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import ExitDialog from '../common/ExitDialog';
+import GameOverDialog from '../common/GameOverDialog';
 import GameRatingComment from '../common/GameRatingComment';
 import './CaroGame.css';
 
@@ -42,6 +43,8 @@ const CaroGame = () => {
     const [gameName, setGameName] = useState('Caro Hàng 5');
     const [pixels, setPixels] = useState([]);
     const [showExitDialog, setShowExitDialog] = useState(false);
+    const [showGameOverDialog, setShowGameOverDialog] = useState(false);
+    const [loadedFromSave, setLoadedFromSave] = useState(false);
 
     // Game config based on gameId
     useEffect(() => {
@@ -69,10 +72,12 @@ const CaroGame = () => {
         }
     }, [gameId]);
 
-    // Initialize board
+    // Initialize board only if not loaded from save
     useEffect(() => {
-        initializeGame();
-    }, [boardSize]);
+        if (!loadedFromSave) {
+            initializeGame();
+        }
+    }, [boardSize, loadedFromSave]);
 
     // Convert board to LED pixels
     useEffect(() => {
@@ -147,7 +152,18 @@ const CaroGame = () => {
             }
         };
         loadSavedGame();
-    }, [gameId]);
+    }, [gameId, boardSize]);
+
+    // Show game over dialog when game ends
+    useEffect(() => {
+        if (gameOver && winner !== null) {
+            // Small delay for visual effect
+            const timer = setTimeout(() => {
+                setShowGameOverDialog(true);
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [gameOver, winner]);
 
     // Timer
     useEffect(() => {
@@ -628,6 +644,21 @@ const CaroGame = () => {
                 onSave={saveGameAndExit}
                 onDiscard={discardAndExit}
                 onCancel={() => setShowExitDialog(false)}
+                gameName={gameName}
+            />
+
+            {/* Game Over Dialog */}
+            <GameOverDialog
+                isOpen={showGameOverDialog}
+                isWin={winner === 1}
+                score={score}
+                message={winner === 1 ? 'Bạn đã chiến thắng AI!' : 'AI đã thắng bạn!'}
+                onPlayAgain={() => {
+                    setShowGameOverDialog(false);
+                    setLoadedFromSave(false);
+                    initializeGame();
+                }}
+                onExit={() => navigate('/games')}
                 gameName={gameName}
             />
         </div>
