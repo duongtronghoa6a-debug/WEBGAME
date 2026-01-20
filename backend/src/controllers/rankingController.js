@@ -2,14 +2,17 @@ const GameSession = require('../models/GameSession');
 const Friend = require('../models/Friend');
 
 /**
- * Get global rankings for a game
+ * Get global rankings for a game (or all games if no gameId)
  */
 exports.getGlobalRanking = async (req, res) => {
     try {
         const { gameId } = req.params;
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, game_id } = req.query;
 
-        const result = await GameSession.getRankings(parseInt(gameId), {
+        // gameId from params or query
+        const targetGameId = gameId || game_id;
+
+        const result = await GameSession.getRankings(targetGameId ? parseInt(targetGameId) : null, {
             page: parseInt(page),
             limit: parseInt(limit)
         });

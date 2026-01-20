@@ -107,20 +107,27 @@ class GameSession {
     }
 
     /**
-     * Get completed sessions for ranking
+     * Get completed sessions for ranking (all games if gameId is null)
      */
     static async getRankings(gameId, { page = 1, limit = 10, userIds }) {
         let query = db(this.tableName)
-            .where({ game_id: gameId, completed: true })
+            .where({ completed: true })
             .join('users', 'users.id', '=', `${this.tableName}.user_id`)
             .select(
                 'users.id as user_id',
                 'users.username',
                 'users.avatar_url',
+                db.raw(`SUM(${this.tableName}.score) as total_score`),
                 db.raw(`MAX(${this.tableName}.score) as highest_score`),
-                db.raw(`COUNT(${this.tableName}.id) as total_games`)
+                db.raw(`COUNT(${this.tableName}.id) as games_played`),
+                db.raw(`ROUND(AVG(${this.tableName}.score)) as avg_score`)
             )
             .groupBy('users.id', 'users.username', 'users.avatar_url');
+
+        // Filter by gameId if provided
+        if (gameId) {
+            query = query.where({ game_id: gameId });
+        }
 
         if (userIds && userIds.length > 0) {
             query = query.whereIn('users.id', userIds);
@@ -128,7 +135,7 @@ class GameSession {
 
         const offset = (page - 1) * limit;
         const rankings = await query
-            .orderBy('highest_score', 'desc')
+            .orderBy('total_score', 'desc')
             .limit(limit)
             .offset(offset);
 
@@ -136,14 +143,22 @@ class GameSession {
         const rankedData = rankings.map((item, index) => ({
             rank: offset + index + 1,
             ...item,
-            highest_score: parseInt(item.highest_score),
-            total_games: parseInt(item.total_games)
+            total_score: parseInt(item.total_score) || 0,
+            highest_score: parseInt(item.highest_score) || 0,
+            games_played: parseInt(item.games_played) || 0,
+            avg_score: parseInt(item.avg_score) || 0
         }));
 
         // Get total count for pagination
-        const [{ count }] = await db(this.tableName)
-            .where({ game_id: gameId, completed: true })
+        let countQuery = db(this.tableName)
+            .where({ completed: true })
             .countDistinct('user_id as count');
+
+        if (gameId) {
+            countQuery = countQuery.where({ game_id: gameId });
+        }
+
+        const [{ count }] = await countQuery;
 
         return {
             data: rankedData,

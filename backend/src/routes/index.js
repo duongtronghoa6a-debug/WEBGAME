@@ -40,6 +40,7 @@ router.get('/games/:id/comments', auth, gameController.getComments);
 // ============== FRIEND ROUTES ==============
 router.get('/friends', auth, friendController.getFriends);
 router.get('/friends/pending', auth, friendController.getPendingRequests);
+router.get('/friends/requests', auth, friendController.getPendingRequests); // Alias
 router.post('/friends/request', auth, friendController.sendRequest);
 router.put('/friends/:requestId/accept', auth, friendController.acceptRequest);
 router.put('/friends/:requestId/reject', auth, friendController.rejectRequest);
@@ -54,6 +55,7 @@ router.post('/messages', auth, messageController.sendMessage);
 router.put('/messages/:messageId/read', auth, messageController.markAsRead);
 
 // ============== RANKING ROUTES ==============
+router.get('/rankings', auth, rankingController.getGlobalRanking); // All games
 router.get('/rankings/:gameId', auth, rankingController.getGlobalRanking);
 router.get('/rankings/:gameId/friends', auth, rankingController.getFriendsRanking);
 router.get('/rankings/:gameId/personal', auth, rankingController.getPersonalRanking);
