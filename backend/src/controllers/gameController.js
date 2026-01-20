@@ -277,6 +277,41 @@ exports.rateGame = async (req, res) => {
 };
 
 /**
+ * Get game ratings (average and user's rating)
+ */
+exports.getRatings = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Get average rating and total count
+        const stats = await Rating.getGameStats(parseInt(id));
+
+        // Get user's rating if logged in
+        let userRating = null;
+        if (req.user) {
+            const rating = await Rating.getUserRating(req.user.id, parseInt(id));
+            userRating = rating?.stars || null;
+        }
+
+        res.json({
+            success: true,
+            data: {
+                average: parseFloat(stats?.avg_rating) || 0,
+                total: stats?.total_ratings || 0,
+                userRating
+            }
+        });
+    } catch (error) {
+        console.error('Get ratings error:', error);
+        res.status(500).json({
+            success: false,
+            error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+        });
+    }
+};
+
+
+/**
  * Comment on game
  */
 exports.commentGame = async (req, res) => {

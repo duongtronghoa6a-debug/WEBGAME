@@ -35,6 +35,7 @@ router.post('/games/:id/sessions', auth, gameController.createSession);
 router.get('/games/sessions/:sessionId', auth, gameController.getSession);
 router.put('/games/sessions/:sessionId', auth, gameController.updateSession);
 router.post('/games/:id/ratings', auth, gameController.rateGame);
+router.get('/games/:id/ratings', optionalAuth, gameController.getRatings);
 router.post('/games/:id/comments', auth, gameController.commentGame);
 router.get('/games/:id/comments', auth, gameController.getComments);
 
