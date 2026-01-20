@@ -47,7 +47,7 @@ const Achievements = () => {
     });
 
     const totalPoints = achievements.reduce((sum, a) =>
-        isUnlocked(a.id) ? sum + a.points : sum, 0
+        isUnlocked(a.id) ? sum + (a.points || 0) : sum, 0
     );
 
     const unlockedCount = achievements.filter(a => isUnlocked(a.id)).length;

@@ -85,7 +85,7 @@ const Friends = () => {
 
     const acceptRequest = async (requestId) => {
         try {
-            await api.post(`/friends/accept/${requestId}`);
+            await api.put(`/friends/${requestId}/accept`);
             fetchFriends();
             fetchPendingRequests();
         } catch (error) {
@@ -95,7 +95,7 @@ const Friends = () => {
 
     const rejectRequest = async (requestId) => {
         try {
-            await api.delete(`/friends/reject/${requestId}`);
+            await api.put(`/friends/${requestId}/reject`);
             fetchPendingRequests();
         } catch (error) {
             console.error('Error rejecting request:', error);
