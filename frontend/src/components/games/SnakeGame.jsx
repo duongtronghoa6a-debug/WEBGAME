@@ -40,6 +40,7 @@ const SnakeGame = () => {
     const [showGameOverDialog, setShowGameOverDialog] = useState(false);
     const [loadedFromSave, setLoadedFromSave] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [savedSessionId, setSavedSessionId] = useState(null); // Track active session for cleanup
     const prevDirectionRef = useRef(DIRECTIONS.RIGHT); // Track previous direction for reverse prevention
 
     // Board dimensions: 18x18 playable + 1 wall on each side = 20x20 display
@@ -118,6 +119,9 @@ const SnakeGame = () => {
         setGameOver(false);
         setIsPlaying(false);
         setSpeed(150);
+        // Clear saved session state on reset
+        setSavedSessionId(null);
+        setLoadedFromSave(false);
     }, [generateFood]);
 
     // Game loop
@@ -191,7 +195,9 @@ const SnakeGame = () => {
                         if (state.direction) {
                             setDirection(state.direction);
                             directionRef.current = state.direction;
+                            prevDirectionRef.current = state.direction;
                         }
+                        setSavedSessionId(saved.id); // Store session ID for later cleanup
                         setLoadedFromSave(true);
                     }
                 }
@@ -211,15 +217,31 @@ const SnakeGame = () => {
         }
     }, [isLoading, loadedFromSave, initializeGame]);
 
-    // Show game over dialog
+    // Handle game over - complete session and show dialog
     useEffect(() => {
         if (gameOver) {
+            // Complete the saved session so it won't be loaded again
+            const completeSession = async () => {
+                if (savedSessionId) {
+                    try {
+                        await api.put(`/games/sessions/${savedSessionId}`, {
+                            completed: true,
+                            score: score
+                        });
+                    } catch (error) {
+                        console.error('Complete session error:', error);
+                    }
+                    setSavedSessionId(null);
+                }
+            };
+            completeSession();
+
             const timer = setTimeout(() => {
                 setShowGameOverDialog(true);
             }, 300);
             return () => clearTimeout(timer);
         }
-    }, [gameOver]);
+    }, [gameOver, savedSessionId, score]);
 
     // Keyboard controls
     useEffect(() => {
