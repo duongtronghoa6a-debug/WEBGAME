@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw, Trophy, Clock, ArrowLeft, Flag, Bomb } from 'lucide-react';
+import { RotateCcw, Trophy, Clock, ArrowLeft, Flag, Bomb, Save } from 'lucide-react';
+import api from '../../services/api';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
 import './Minesweeper.css';
@@ -193,6 +194,21 @@ const Minesweeper = () => {
 
     const flagCount = flagged.flat().filter(Boolean).length;
 
+    // Save game
+    const saveGame = async () => {
+        try {
+            await api.post('/games/11/sessions', {
+                state: JSON.stringify({ board, revealed, flagged, cursor }),
+                score: time,
+                time_spent: time,
+                completed: won
+            });
+            alert('Game đã được lưu!');
+        } catch (error) {
+            console.error('Save error:', error);
+        }
+    };
+
     return (
         <div className="minesweeper-page">
             <div className="game-header">
@@ -202,6 +218,9 @@ const Minesweeper = () => {
                 <h1>💣 Dò Mìn</h1>
                 <button className="btn btn-primary" onClick={initGame}>
                     <RotateCcw size={18} /> Chơi lại
+                </button>
+                <button className="btn btn-outline" onClick={saveGame} disabled={gameOver || won}>
+                    <Save size={18} /> Lưu
                 </button>
             </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw, Trophy, Clock, ArrowLeft, Pause, Play } from 'lucide-react';
+import { RotateCcw, Trophy, Clock, ArrowLeft, Pause, Play, Save } from 'lucide-react';
+import api from '../../services/api';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
 import './TetrisGame.css';
@@ -274,6 +275,21 @@ const TetrisGame = () => {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
+    // Save game
+    const saveGame = async () => {
+        try {
+            await api.post('/games/8/sessions', {
+                state: JSON.stringify({ board, currentPiece, position, nextPiece }),
+                score,
+                time_spent: time,
+                completed: gameOver
+            });
+            alert('Game đã được lưu!');
+        } catch (error) {
+            console.error('Save error:', error);
+        }
+    };
+
     return (
         <div className="tetris-page">
             <div className="game-header">
@@ -283,6 +299,9 @@ const TetrisGame = () => {
                 <h1>🧱 Tetris</h1>
                 <button className="btn btn-primary" onClick={initGame}>
                     <RotateCcw size={18} /> Chơi lại
+                </button>
+                <button className="btn btn-outline" onClick={saveGame} disabled={isPaused || gameOver}>
+                    <Save size={18} /> Lưu game
                 </button>
             </div>
 

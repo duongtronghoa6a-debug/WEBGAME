@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw, Trophy, Clock, ArrowLeft } from 'lucide-react';
+import { RotateCcw, Trophy, Clock, ArrowLeft, Save } from 'lucide-react';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
 import api from '../../services/api';
@@ -151,6 +151,21 @@ const Game2048 = () => {
         }
     };
 
+    // Manual save game
+    const saveGame = async () => {
+        try {
+            await api.post('/games/9/sessions', {
+                score,
+                time_spent: time,
+                completed: gameOver || won,
+                state: JSON.stringify({ board, score })
+            });
+            alert('Game đã được lưu!');
+        } catch (error) {
+            console.error('Save error:', error);
+        }
+    };
+
     // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -194,6 +209,9 @@ const Game2048 = () => {
                 <h1>2048</h1>
                 <button className="btn btn-primary" onClick={initGame}>
                     <RotateCcw size={18} /> Chơi lại
+                </button>
+                <button className="btn btn-outline" onClick={saveGame} disabled={gameOver || won}>
+                    <Save size={18} /> Lưu
                 </button>
             </div>
 
