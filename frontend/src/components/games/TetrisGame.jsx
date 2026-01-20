@@ -243,7 +243,11 @@ const TetrisGame = () => {
                     break;
                 case ' ':
                     e.preventDefault();
-                    hardDrop();
+                    if (!isPlaying) {
+                        setIsPlaying(true);
+                    } else {
+                        hardDrop();
+                    }
                     break;
                 case 'Enter':
                     e.preventDefault();

@@ -19,8 +19,6 @@ const DEFAULT_GAMES = [
     { id: 6, name: 'Cờ Trí Nhớ', type: 'memory', icon: 'memory' },
     { id: 7, name: 'Bảng Vẽ', type: 'drawing', icon: 'drawing' },
     { id: 8, name: 'Tetris', type: 'tetris', icon: 'tetris' },
-    { id: 9, name: '2048', type: '2048', icon: 'game2048' },
-    { id: 10, name: 'Dò Mìn', type: 'minesweeper', icon: 'minesweeper' },
 ];
 
 const MATRIX_SIZE = 15;

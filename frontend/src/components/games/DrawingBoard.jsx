@@ -82,7 +82,8 @@ const DrawingBoard = () => {
                     break;
                 case 'h':
                 case 'H':
-                    setShowInstructions(prev => !prev);
+                    e.preventDefault();
+                    cycleColor();
                     break;
             }
         };
