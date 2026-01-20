@@ -164,6 +164,29 @@ Tương tự Caro 5, nhưng chỉ cần 4 quân liên tiếp.
 
 ---
 
+## 8. Tetris
+
+### Luật Chơi
+- Các khối hình học rơi từ trên xuống
+- Xếp khối để tạo hàng ngang hoàn chỉnh
+- Hàng đầy sẽ biến mất và cộng điểm
+- Thua khi khối chạm đỉnh màn hình
+
+### Cách Chơi
+1. **←/→**: Di chuyển khối ngang
+2. **↑**: Xoay khối 90°
+3. **↓**: Rơi nhanh (soft drop)
+4. **SPACE**: Rơi ngay lập tức (hard drop)
+5. **ESC**: Tạm dừng/Thoát
+
+### Tính Điểm
+- 1 hàng: +100 điểm
+- 2 hàng (Double): +300 điểm
+- 3 hàng (Triple): +500 điểm
+- 4 hàng (Tetris): +800 điểm
+
+---
+
 ## Save/Load Game
 
 ### Cách Save

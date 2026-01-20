@@ -32,7 +32,7 @@
 │  │   Layout     │  │    Layout    │  │   Components         │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 │                                                                   │
-│  URL: https://localhost:3000                                      │
+│  URL: https://localhost:5173                                      │
 └─────────────────────────────────┬───────────────────────────────┘
                                   │ REST API + JWT
                                   │ X-API-Key Header
@@ -420,7 +420,7 @@ Input Password → bcrypt.compare(input, stored) → true/false
 │                                                              │
 │  ┌─────────────────────┐     ┌─────────────────────────┐   │
 │  │  Frontend Dev       │     │  Backend Dev            │   │
-│  │  localhost:3000     │────►│  localhost:5000         │   │
+│  │  localhost:5173     │────►│  localhost:5000         │   │
 │  │  npm run dev        │     │  npm run dev            │   │
 │  └─────────────────────┘     └───────────┬─────────────┘   │
 │                                          │                   │

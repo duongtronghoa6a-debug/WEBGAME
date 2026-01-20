@@ -115,7 +115,7 @@ VITE_API_KEY=your-api-key
 npm run dev
 ```
 
-Frontend sẽ chạy tại: `http://localhost:3000`
+Frontend sẽ chạy tại: `http://localhost:5173`
 
 ---
 
@@ -182,7 +182,7 @@ curl http://localhost:5000/api/health
 ```
 
 ### 7.2. Test Frontend
-- Mở browser: http://localhost:3000
+- Mở browser: http://localhost:5173
 - Kiểm tra giao diện hiển thị
 - Test Dark/Light mode
 
@@ -198,12 +198,12 @@ npm run migrate:status
 
 | Email | Password | Role |
 |-------|----------|------|
-| admin@boardgame.com | password123 | Admin |
-| player1@example.com | password123 | User |
-| player2@example.com | password123 | User |
-| player3@example.com | password123 | User |
-| player4@example.com | password123 | User |
-| player5@example.com | password123 | User |
+| 01@gmail.com | 111111 | Admin |
+| 02@gmail.com | 111111 | User |
+| 03@gmail.com | 111111 | User |
+| 04@gmail.com | 111111 | User |
+| 05@gmail.com | 111111 | User |
+| 06@gmail.com | 111111 | User |
 
 ---
 
