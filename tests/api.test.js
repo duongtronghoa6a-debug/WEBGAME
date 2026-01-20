@@ -6,7 +6,7 @@
 // Node.js < 18 needs node-fetch
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'http://localhost:5000/api';
 const API_KEY = 'boardgame-api-key-2024-secure';
 
 let authToken = null;
@@ -93,7 +93,7 @@ const tests = [
         assert(status === 200, `Expected 200, got ${status}`);
         assert(data.success === true, 'Expected success: true');
         assert(Array.isArray(data.data), 'Expected array of games');
-        assert(data.data.length >= 7, 'Expected at least 7 games');
+        assert(data.data.length >= 8, 'Expected at least 8 games');
     }),
 
     test('GET /games/1 - Get single game', async () => {

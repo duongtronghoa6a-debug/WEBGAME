@@ -36,9 +36,11 @@
 | 1 | Arrow keys di chuyển cursor | Cursor di chuyển trên bàn cờ | [ ] |
 | 2 | Enter đặt quân | Quân X xuất hiện tại cursor | [ ] |
 | 3 | AI đánh lại | Quân O xuất hiện sau 0.5s | [ ] |
-| 4 | Thắng 5 hàng | Thông báo chiến thắng | [ ] |
+| 4 | Thắng 5 hàng | GameOverDialog hiển, chọn chơi lại hoặc thoát | [ ] |
 | 5 | Timer hoạt động | Đếm ngược/đếm xuôi đúng | [ ] |
-| 6 | Save game | Game được lưu, alert xác nhận | [ ] |
+| 6 | Esc khi đang chơi | ExitDialog hiện, chọn lưu hoặc không lưu | [ ] |
+| 7 | Auto-load | Vào lại game sau khi lưu → load trạng thái cũ | [ ] |
+| 8 | AI Level selector | Có thể chọn level AI bất kỳ lúc nào | [ ] |
 
 ### Rắn Săn Mồi (Game 4)
 | # | Mô tả | Kết quả mong đợi | Pass |
@@ -63,7 +65,9 @@
 | 1 | Lật thẻ | Thẻ hiện mặt | [ ] |
 | 2 | Match 2 thẻ | Giữ nguyên open | [ ] |
 | 3 | Không match | Úp lại sau 1s | [ ] |
-| 4 | Hoàn thành | Thông báo thắng | [ ] |
+| 4 | Hoàn thành | GameOverDialog hiển chiến thắng | [ ] |
+| 5 | Esc khi đang chơi | ExitDialog hiện | [ ] |
+| 6 | Auto-load | Vào lại game → load trạng thái cũ | [ ] |
 
 ### Bảng Vẽ (Game 7)
 | # | Mô tả | Kết quả mong đợi | Pass |
@@ -81,24 +85,12 @@
 | 2 | ↑ xoay | Khối xoay 90° | [ ] |
 | 3 | ↓ rơi nhanh | Khối rơi nhanh | [ ] |
 | 4 | Clear line | Hàng đầy biến mất, +điểm | [ ] |
-| 5 | Game over | Khối chạm đỉnh | [ ] |
+| 5 | Game over | GameOverDialog hiển | [ ] |
+| 6 | Esc khi đang chơi | ExitDialog hiện | [ ] |
+| 7 | Auto-load | Vào lại game → load trạng thái cũ | [ ] |
 
-### Dò Mìn (Game 11)
-| # | Mô tả | Kết quả mong đợi | Pass |
-|:-:|-------|------------------|:----:|
-| 1 | Cursor di chuyển | Arrow keys hoạt động | [ ] |
-| 2 | Enter mở ô | Ô reveal | [ ] |
-| 3 | F cắm cờ | Cờ xuất hiện | [ ] |
-| 4 | Mở mìn | Game Over | [ ] |
-| 5 | Clear hết ô an toàn | Thắng | [ ] |
+---
 
-### 2048 (Game 18)
-| # | Mô tả | Kết quả mong đợi | Pass |
-|:-:|-------|------------------|:----:|
-| 1 | Arrow di chuyển | Ô trượt đúng hướng | [ ] |
-| 2 | Merge | 2+2=4, 4+4=8... | [ ] |
-| 3 | Đạt 2048 | Thông báo thắng | [ ] |
-| 4 | Không còn move | Game Over | [ ] |
 
 ---
 
@@ -149,11 +141,11 @@
 | Phần | Tổng | Pass | Fail |
 |------|:----:|:----:|:----:|
 | Authentication | 5 | | |
-| Games | 35 | | |
+| Games | 44 | | |
 | Social | 9 | | |
 | Admin | 7 | | |
 | UI/UX | 5 | | |
-| **TỔNG** | **61** | | |
+| **TỔNG** | **70** | | |
 
 ---
 
