@@ -22,6 +22,7 @@ router.get('/auth/me', auth, authController.me);
 
 // ============== USER ROUTES ==============
 router.get('/users', auth, userController.search);
+router.get('/achievements', auth, userController.getMyAchievements); // Current user achievements
 router.get('/users/:id', auth, userController.getProfile);
 router.put('/users/:id', auth, userController.updateProfile);
 router.get('/users/:id/achievements', auth, userController.getAchievements);

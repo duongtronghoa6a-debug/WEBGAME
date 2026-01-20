@@ -13,8 +13,8 @@
 ### Tài khoản test
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | `admin@boardgame.com` | `password123` |
-| User | `player1@example.com` | `password123` |
+| Admin | `01@gmail.com` | `111111` |
+| User | `02@gmail.com` | `111111` |
 
 ### Test Cases
 

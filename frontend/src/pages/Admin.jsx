@@ -28,18 +28,30 @@ const Admin = () => {
 
     const fetchStats = async () => {
         try {
-            const res = await api.get('/admin/stats');
-            setStats(res.data.data);
+            const res = await api.get('/admin/statistics');
+            const data = res.data.data;
+            // Map API response to frontend format
+            setStats({
+                totalUsers: data.users?.total || 0,
+                totalGames: 10, // Fixed: 10 games in seed
+                totalSessions: data.games?.total_plays || 0,
+                activeToday: data.games?.plays_today || 0,
+                newUsersThisWeek: data.users?.new_this_week || 0,
+                totalMessages: 0, // Can add later if needed
+                avgRating: data.ratings?.average || 0,
+                totalRatings: data.ratings?.total || 0,
+                popularGames: data.games?.most_popular || []
+            });
         } catch (error) {
             console.error('Error fetching stats:', error);
-            // Demo stats
+            // Fallback - but should not happen if API works
             setStats({
-                totalUsers: 156,
-                totalGames: 17,
-                totalSessions: 1234,
-                activeToday: 45,
-                newUsersThisWeek: 23,
-                totalMessages: 890
+                totalUsers: 0,
+                totalGames: 10,
+                totalSessions: 0,
+                activeToday: 0,
+                newUsersThisWeek: 0,
+                totalMessages: 0
             });
         } finally {
             setLoading(false);
@@ -52,31 +64,17 @@ const Admin = () => {
             setUsers(res.data.data || []);
         } catch (error) {
             console.error('Error fetching users:', error);
-            // Demo users
-            setUsers([
-                { id: '1', username: 'admin', email: 'admin@boardgame.com', role: 'admin', status: 'active', created_at: '2024-01-01' },
-                { id: '2', username: 'player1', email: 'player1@example.com', role: 'player', status: 'active', created_at: '2024-01-15' },
-                { id: '3', username: 'player2', email: 'player2@example.com', role: 'player', status: 'active', created_at: '2024-01-20' },
-                { id: '4', username: 'gamer_pro', email: 'gamer@example.com', role: 'player', status: 'banned', created_at: '2024-02-01' },
-                { id: '5', username: 'newbie', email: 'newbie@example.com', role: 'player', status: 'active', created_at: '2024-02-10' },
-            ]);
+            setUsers([]); // No fake data
         }
     };
 
     const fetchGames = async () => {
         try {
-            const res = await api.get('/games');
+            const res = await api.get('/admin/games');
             setGames(res.data.data || []);
         } catch (error) {
             console.error('Error fetching games:', error);
-            // Demo games
-            setGames([
-                { id: 1, name: 'Caro Hàng 5', category: 'strategy', play_count: 450, is_active: true },
-                { id: 4, name: 'Rắn Săn Mồi', category: 'arcade', play_count: 320, is_active: true },
-                { id: 5, name: 'Ghép Hàng 3', category: 'puzzle', play_count: 280, is_active: true },
-                { id: 6, name: 'Cờ Trí Nhớ', category: 'puzzle', play_count: 200, is_active: true },
-                { id: 7, name: 'Bảng Vẽ', category: 'creative', play_count: 150, is_active: true },
-            ]);
+            setGames([]); // No fake data
         }
     };
 

@@ -16,7 +16,7 @@ const Home = () => {
                         <br />Web Application
                     </h1>
                     <p className="hero-description">
-                        Chơi hơn 17 game hấp dẫn: Caro, Snake, Match-3, Tetris, Chess và nhiều hơn nữa!
+                        Chơi 10 game hấp dẫn: Caro, Snake, Match-3, Tetris, Memory, 2048 và nhiều hơn nữa!
                         Kết nối với bạn bè, leo rank và chinh phục thành tựu.
                     </p>
                     <div className="hero-buttons">
@@ -54,8 +54,8 @@ const Home = () => {
                 <div className="features-grid">
                     <div className="feature-card">
                         <div className="feature-icon"><Gamepad2 size={32} /></div>
-                        <h3>17+ Games</h3>
-                        <p>Caro, Snake, Match-3, Tetris, Chess, Memory và nhiều game khác</p>
+                        <h3>10 Games</h3>
+                        <p>Caro, Snake, Match-3, Tetris, Memory, 2048, Minesweeper và nhiều hơn</p>
                     </div>
                     <div className="feature-card">
                         <div className="feature-icon"><Users size={32} /></div>
@@ -95,7 +95,7 @@ const Home = () => {
                         { emoji: '🍬', name: 'Match-3', desc: 'Ghép 3 viên cùng màu' },
                         { emoji: '🧠', name: 'Memory', desc: 'Trò chơi trí nhớ' },
                         { emoji: '🧱', name: 'Tetris', desc: 'Xếp gạch huyền thoại' },
-                        { emoji: '♟️', name: 'Chess', desc: 'Cờ vua trí tuệ' },
+                        { emoji: '🔢', name: '2048', desc: 'Ghép số gấp đôi' },
                         { emoji: '💣', name: 'Minesweeper', desc: 'Dò mìn' },
                         { emoji: '🎨', name: 'Drawing', desc: 'Bảng vẽ tự do' },
                     ].map((game, i) => (

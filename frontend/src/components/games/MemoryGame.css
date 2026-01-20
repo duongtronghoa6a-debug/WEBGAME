@@ -5,15 +5,37 @@
 }
 
 .memory-board {
+    display: grid;
     max-width: 450px;
     margin: 0 auto;
     gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
 }
 
 .memory-card {
     aspect-ratio: 1;
     perspective: 1000px;
     cursor: pointer;
+}
+
+.memory-card.cursor {
+    box-shadow: 0 0 0 4px #fbbf24, 0 0 20px rgba(251, 191, 36, 0.6);
+    border-radius: var(--radius-md);
+    animation: cursorPulse 1s ease-in-out infinite;
+}
+
+@keyframes cursorPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 4px #fbbf24, 0 0 20px rgba(251, 191, 36, 0.6);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px #fbbf24, 0 0 30px rgba(251, 191, 36, 0.8);
+    }
 }
 
 .card-inner {

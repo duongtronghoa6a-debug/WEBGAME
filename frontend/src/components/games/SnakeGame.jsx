@@ -119,6 +119,7 @@ const SnakeGame = () => {
                 case 'ArrowUp':
                 case 'w':
                 case 'W':
+                    e.preventDefault();
                     if (directionRef.current !== DIRECTIONS.DOWN) {
                         directionRef.current = DIRECTIONS.UP;
                         setDirection(DIRECTIONS.UP);
@@ -127,6 +128,7 @@ const SnakeGame = () => {
                 case 'ArrowDown':
                 case 's':
                 case 'S':
+                    e.preventDefault();
                     if (directionRef.current !== DIRECTIONS.UP) {
                         directionRef.current = DIRECTIONS.DOWN;
                         setDirection(DIRECTIONS.DOWN);
@@ -135,6 +137,7 @@ const SnakeGame = () => {
                 case 'ArrowLeft':
                 case 'a':
                 case 'A':
+                    e.preventDefault();
                     if (directionRef.current !== DIRECTIONS.RIGHT) {
                         directionRef.current = DIRECTIONS.LEFT;
                         setDirection(DIRECTIONS.LEFT);
@@ -143,6 +146,7 @@ const SnakeGame = () => {
                 case 'ArrowRight':
                 case 'd':
                 case 'D':
+                    e.preventDefault();
                     if (directionRef.current !== DIRECTIONS.LEFT) {
                         directionRef.current = DIRECTIONS.RIGHT;
                         setDirection(DIRECTIONS.RIGHT);

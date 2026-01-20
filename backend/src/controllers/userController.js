@@ -139,3 +139,23 @@ exports.getAchievements = async (req, res) => {
         });
     }
 };
+
+/**
+ * Get current user's achievements
+ */
+exports.getMyAchievements = async (req, res) => {
+    try {
+        const achievements = await Achievement.getUserAchievements(req.user.id);
+
+        res.json({
+            success: true,
+            data: achievements
+        });
+    } catch (error) {
+        console.error('Get my achievements error:', error);
+        res.status(500).json({
+            success: false,
+            error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+        });
+    }
+};

@@ -26,15 +26,18 @@ const Friends = () => {
     const fetchFriends = async () => {
         try {
             const res = await api.get('/friends');
-            setFriends(res.data.data || []);
+            // API returns: { id, friend: {id, username, avatar_url}, status, ... }
+            // Flatten to: { id, username, avatar_url, status }
+            const friendsData = (res.data.data || []).map(f => ({
+                id: f.friend?.id || f.id,
+                username: f.friend?.username || 'Unknown',
+                avatar_url: f.friend?.avatar_url || null,
+                status: 'offline' // Can enhance later with online status
+            }));
+            setFriends(friendsData);
         } catch (error) {
             console.error('Error fetching friends:', error);
-            // Demo data
-            setFriends([
-                { id: '1', username: 'player1', avatar_url: null, status: 'online' },
-                { id: '2', username: 'player2', avatar_url: null, status: 'offline' },
-                { id: '3', username: 'gamer_pro', avatar_url: null, status: 'online' },
-            ]);
+            setFriends([]);
         } finally {
             setLoading(false);
         }
@@ -43,27 +46,29 @@ const Friends = () => {
     const fetchPendingRequests = async () => {
         try {
             const res = await api.get('/friends/requests');
-            setPendingRequests(res.data.data || []);
+            // API returns: { id, sender_id, sender_username, sender_avatar, created_at }
+            // Map to: { id, username, avatar_url, created_at }
+            const requestsData = (res.data.data || []).map(r => ({
+                id: r.id,
+                sender_id: r.sender_id,
+                username: r.sender_username || 'Unknown',
+                avatar_url: r.sender_avatar || null,
+                created_at: r.created_at
+            }));
+            setPendingRequests(requestsData);
         } catch (error) {
             console.error('Error fetching requests:', error);
-            // Demo data
-            setPendingRequests([
-                { id: '4', username: 'new_player', avatar_url: null, created_at: new Date().toISOString() },
-            ]);
+            setPendingRequests([]);
         }
     };
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;
         try {
-            const res = await api.get(`/users/search?q=${searchQuery}`);
+            const res = await api.get(`/users?search=${searchQuery}`);
             setSearchResults(res.data.data || []);
         } catch (error) {
             console.error('Search error:', error);
-            // Demo search results
-            setSearchResults([
-                { id: '5', username: searchQuery, avatar_url: null },
-            ]);
         }
     };
 

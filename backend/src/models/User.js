@@ -72,26 +72,33 @@ class User {
      * Search users with pagination
      */
     static async search({ search, page = 1, limit = 10, excludeUserId }) {
+        // Build count query first
+        let countQuery = db(this.tableName);
+        if (search) {
+            countQuery = countQuery.where(function () {
+                this.where('username', 'ilike', `%${search}%`)
+                    .orWhere('email', 'ilike', `%${search}%`);
+            });
+        }
+        if (excludeUserId) {
+            countQuery = countQuery.whereNot('id', excludeUserId);
+        }
+        const [{ count }] = await countQuery.count();
+        const total = parseInt(count);
+
+        // Build data query
         let query = db(this.tableName)
             .select('id', 'username', 'avatar_url', 'created_at');
-
         if (search) {
             query = query.where(function () {
                 this.where('username', 'ilike', `%${search}%`)
                     .orWhere('email', 'ilike', `%${search}%`);
             });
         }
-
         if (excludeUserId) {
             query = query.whereNot('id', excludeUserId);
         }
 
-        // Get total count
-        const countQuery = query.clone();
-        const [{ count }] = await countQuery.count();
-        const total = parseInt(count);
-
-        // Get paginated results
         const offset = (page - 1) * limit;
         const users = await query
             .orderBy('username', 'asc')
@@ -113,19 +120,26 @@ class User {
      * Get all users (admin)
      */
     static async getAll({ page = 1, limit = 10, search }) {
+        // Build count query first
+        let countQuery = db(this.tableName);
+        if (search) {
+            countQuery = countQuery.where(function () {
+                this.where('username', 'ilike', `%${search}%`)
+                    .orWhere('email', 'ilike', `%${search}%`);
+            });
+        }
+        const [{ count }] = await countQuery.count();
+        const total = parseInt(count);
+
+        // Build data query
         let query = db(this.tableName)
             .select('id', 'email', 'username', 'avatar_url', 'is_admin', 'created_at', 'updated_at');
-
         if (search) {
             query = query.where(function () {
                 this.where('username', 'ilike', `%${search}%`)
                     .orWhere('email', 'ilike', `%${search}%`);
             });
         }
-
-        const countQuery = query.clone();
-        const [{ count }] = await countQuery.count();
-        const total = parseInt(count);
 
         const offset = (page - 1) * limit;
         const users = await query
