@@ -69,6 +69,32 @@ const CaroGame = () => {
         initializeGame();
     }, [boardSize]);
 
+    // Load saved game session on mount
+    useEffect(() => {
+        const loadSavedGame = async () => {
+            try {
+                const res = await api.get('/games/sessions?completed=false');
+                if (res.data.success && res.data.data && res.data.data.length > 0) {
+                    // Find session for current gameId
+                    const savedSession = res.data.data.find(s => s.game_id === parseInt(gameId));
+                    if (savedSession && savedSession.state) {
+                        const state = savedSession.state;
+                        if (state.board) setBoard(state.board);
+                        if (state.currentPlayer) setCurrentPlayer(state.currentPlayer);
+                        if (state.aiLevel) setAiLevel(state.aiLevel);
+                        if (state.timeSpent) setTimeSpent(state.timeSpent);
+                        if (state.score) setScore(state.score);
+                        setSessionId(savedSession.id);
+                        setIsPlaying(true);
+                    }
+                }
+            } catch (error) {
+                console.error('Load saved game error:', error);
+            }
+        };
+        loadSavedGame();
+    }, [gameId]);
+
     // Timer
     useEffect(() => {
         let interval;
@@ -417,7 +443,11 @@ const CaroGame = () => {
             <div className="game-controls">
                 <div className="ai-selector">
                     <label>AI Level:</label>
-                    <select value={aiLevel} onChange={(e) => setAiLevel(e.target.value)} disabled={isPlaying && !gameOver}>
+                    <select
+                        value={aiLevel}
+                        onChange={(e) => setAiLevel(e.target.value)}
+                        disabled={isAiThinking || (board.some(row => row.some(cell => cell !== 0)) && !gameOver)}
+                    >
                         {Object.entries(AI_LEVELS).map(([key, { name }]) => (
                             <option key={key} value={key}>{name}</option>
                         ))}
