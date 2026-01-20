@@ -70,7 +70,7 @@ exports.getById = async (req, res) => {
 exports.createSession = async (req, res) => {
     try {
         const { id } = req.params;
-        const { config } = req.body;
+        const { config, state, score, time_spent } = req.body;
 
         const game = await Game.findById(parseInt(id));
         if (!game) {
@@ -87,14 +87,23 @@ exports.createSession = async (req, res) => {
             });
         }
 
-        // Initialize game state based on game type
-        const gameConfig = { ...game.config, ...config };
-        const initialState = initializeGameState(game.type, gameConfig);
+        // Use provided state (saving) or initialize new state (starting new game)
+        let gameState;
+        if (state) {
+            // Saving existing game - use provided state
+            gameState = state;
+        } else {
+            // Starting new game - initialize state
+            const gameConfig = { ...game.config, ...config };
+            gameState = initializeGameState(game.type, gameConfig);
+        }
 
         const session = await GameSession.create({
             user_id: req.user.id,
             game_id: parseInt(id),
-            state: initialState
+            state: gameState,
+            score: score || 0,
+            time_spent: time_spent || 0
         });
 
         res.status(201).json({
