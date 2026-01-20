@@ -66,7 +66,20 @@ const Friends = () => {
         if (!searchQuery.trim()) return;
         try {
             const res = await api.get(`/users?search=${searchQuery}`);
-            setSearchResults(res.data.data || []);
+            const users = res.data.data || [];
+
+            // Check friend status for each user
+            const usersWithStatus = await Promise.all(
+                users.map(async (user) => {
+                    try {
+                        const statusRes = await api.get(`/friends/status/${user.id}`);
+                        return { ...user, friendStatus: statusRes.data.data };
+                    } catch {
+                        return { ...user, friendStatus: null };
+                    }
+                })
+            );
+            setSearchResults(usersWithStatus);
         } catch (error) {
             console.error('Search error:', error);
         }
@@ -76,10 +89,22 @@ const Friends = () => {
         try {
             await api.post('/friends/request', { friend_id: userId });
             alert('Đã gửi lời mời kết bạn!');
-            setSearchResults(prev => prev.filter(u => u.id !== userId));
+            // Refresh search to update status
+            handleSearch();
         } catch (error) {
             console.error('Error sending request:', error);
             alert('Lỗi khi gửi lời mời');
+        }
+    };
+
+    const cancelFriendRequest = async (requestId) => {
+        try {
+            await api.delete(`/friends/${requestId}`);
+            alert('Đã hủy lời mời kết bạn!');
+            handleSearch();
+        } catch (error) {
+            console.error('Error canceling request:', error);
+            alert('Lỗi khi hủy lời mời');
         }
     };
 
@@ -110,6 +135,57 @@ const Friends = () => {
         } catch (error) {
             console.error('Error removing friend:', error);
         }
+    };
+
+    // Render friend action button based on status
+    const renderFriendButton = (user) => {
+        const status = user.friendStatus;
+
+        // Already friends
+        if (status?.status === 'accepted') {
+            return (
+                <span className="btn btn-outline btn-sm disabled">
+                    ✓ Đã là bạn
+                </span>
+            );
+        }
+
+        // Pending - I sent the request
+        if (status?.status === 'pending' && status?.is_sender) {
+            return (
+                <button
+                    className="btn btn-outline btn-sm danger"
+                    onClick={() => cancelFriendRequest(status.request_id)}
+                >
+                    <X size={16} />
+                    Hủy yêu cầu
+                </button>
+            );
+        }
+
+        // Pending - I received the request
+        if (status?.status === 'pending' && !status?.is_sender) {
+            return (
+                <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => acceptRequest(status.request_id)}
+                >
+                    <Check size={16} />
+                    Chấp nhận
+                </button>
+            );
+        }
+
+        // No relationship - show add button
+        return (
+            <button
+                className="btn btn-outline btn-sm"
+                onClick={() => sendFriendRequest(user.id)}
+            >
+                <UserPlus size={16} />
+                Kết bạn
+            </button>
+        );
     };
 
     if (loading) {
@@ -158,13 +234,7 @@ const Friends = () => {
                                 <div className="user-info">
                                     <span className="username">{user.username}</span>
                                 </div>
-                                <button
-                                    className="btn btn-outline btn-sm"
-                                    onClick={() => sendFriendRequest(user.id)}
-                                >
-                                    <UserPlus size={16} />
-                                    Kết bạn
-                                </button>
+                                {renderFriendButton(user)}
                             </div>
                         ))}
                     </div>
