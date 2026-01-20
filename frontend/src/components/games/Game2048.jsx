@@ -140,7 +140,7 @@ const Game2048 = () => {
 
     const saveScore = async () => {
         try {
-            await api.post('/games/9/sessions', {
+            await api.post('/games/18/sessions', {
                 score,
                 time_spent: time,
                 completed: true,
@@ -154,7 +154,7 @@ const Game2048 = () => {
     // Manual save game
     const saveGame = async () => {
         try {
-            await api.post('/games/9/sessions', {
+            await api.post('/games/18/sessions', {
                 score,
                 time_spent: time,
                 completed: gameOver || won,
