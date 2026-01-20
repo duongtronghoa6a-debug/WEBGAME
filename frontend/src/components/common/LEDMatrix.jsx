@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import './LEDMatrix.css';
 
 /**
@@ -158,17 +157,6 @@ export const GAME_ICONS = {
     ],
 };
 
-LEDMatrix.propTypes = {
-    pixels: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
-    rows: PropTypes.number,
-    cols: PropTypes.number,
-    cursor: PropTypes.shape({
-        row: PropTypes.number,
-        col: PropTypes.number
-    }),
-    dotSize: PropTypes.oneOf(['small', 'medium', 'large']),
-    showBorder: PropTypes.bool,
-    className: PropTypes.string
-};
+
 
 export default LEDMatrix;
