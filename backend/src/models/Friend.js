@@ -55,6 +55,30 @@ class Friend {
     }
 
     /**
+     * Cancel pending friend request (sender cancels their own request)
+     */
+    static async cancelRequest(requestId, userId) {
+        // Delete only if user is the sender and status is pending
+        return db(this.tableName)
+            .where({ id: requestId, user_id: userId, status: 'pending' })
+            .del();
+    }
+
+    /**
+     * Remove friend or cancel request by ID
+     */
+    static async removeById(requestId, userId) {
+        // Delete any friendship/request involving this user
+        return db(this.tableName)
+            .where({ id: requestId })
+            .where(function () {
+                this.where({ user_id: userId })
+                    .orWhere({ friend_id: userId });
+            })
+            .del();
+    }
+
+    /**
      * Remove friend
      */
     static async removeFriend(userId, friendId) {

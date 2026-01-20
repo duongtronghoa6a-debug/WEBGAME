@@ -162,17 +162,25 @@ exports.rejectRequest = async (req, res) => {
 };
 
 /**
- * Remove friend
+ * Remove friend or cancel pending request by ID
  */
 exports.removeFriend = async (req, res) => {
     try {
         const { friendId } = req.params;
 
-        await Friend.removeFriend(req.user.id, friendId);
+        // Use removeById to delete any friendship/request by ID (works for both accepted and pending)
+        const deleted = await Friend.removeById(friendId, req.user.id);
+
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                error: { code: 'NOT_FOUND', message: 'Friend request or friendship not found' }
+            });
+        }
 
         res.json({
             success: true,
-            message: 'Friend removed'
+            message: 'Removed successfully'
         });
     } catch (error) {
         console.error('Remove friend error:', error);
