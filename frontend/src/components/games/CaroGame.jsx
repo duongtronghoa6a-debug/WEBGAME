@@ -163,6 +163,8 @@ const CaroGame = () => {
     // Keyboard controls - ONLY 5-button, no direct click
     useEffect(() => {
         const handleKeyDown = (e) => {
+            // Block all keyboard when exit dialog is open
+            if (showExitDialog) return;
             if (gameOver || isAiThinking || currentPlayer !== 1) return;
 
             const scale = parseInt(gameId) === 3 ? 3 : 1;
@@ -208,7 +210,7 @@ const CaroGame = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cursor, gameOver, isAiThinking, currentPlayer, boardSize, gameId]);
+    }, [cursor, gameOver, isAiThinking, currentPlayer, boardSize, gameId, showExitDialog, isPlaying]);
 
     // GameController handlers
     const handleLeft = () => {
@@ -549,7 +551,7 @@ const CaroGame = () => {
                     <select
                         value={aiLevel}
                         onChange={(e) => setAiLevel(e.target.value)}
-                        disabled={isAiThinking || (board.some(row => row.some(cell => cell !== 0)) && !gameOver)}
+                        disabled={isAiThinking}
                     >
                         {Object.entries(AI_LEVELS).map(([key, { name }]) => (
                             <option key={key} value={key}>{name}</option>

@@ -216,6 +216,8 @@ const TetrisGame = () => {
     // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
+            // Block keyboard when exit dialog is open
+            if (showExitDialog) return;
             if (gameOver && e.key !== 'Escape') return;
 
             switch (e.key) {
@@ -278,7 +280,7 @@ const TetrisGame = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [gameOver, moveHorizontal, moveDown, rotatePiece, hardDrop, initializeGame, navigate]);
+    }, [gameOver, moveHorizontal, moveDown, rotatePiece, hardDrop, initializeGame, navigate, showExitDialog, isPlaying]);
 
     // Controller handlers
     const handleLeft = () => moveHorizontal(-1);

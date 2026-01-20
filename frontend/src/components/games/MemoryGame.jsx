@@ -84,6 +84,8 @@ const MemoryGame = () => {
     // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
+            // Block keyboard when exit dialog is open
+            if (showExitDialog) return;
             if (isChecking || gameOver) return;
 
             switch (e.key) {
@@ -124,7 +126,7 @@ const MemoryGame = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cursor, isChecking, gameOver, navigate, flippedCards, matchedPairs]);
+    }, [cursor, isChecking, gameOver, navigate, flippedCards, matchedPairs, showExitDialog]);
 
     // Initialize game
     const initializeGame = useCallback(() => {

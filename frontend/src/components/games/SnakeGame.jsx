@@ -144,6 +144,8 @@ const SnakeGame = () => {
     // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
+            // Block keyboard when exit dialog is open
+            if (showExitDialog) return;
             if (gameOver) return;
 
             switch (e.key) {
@@ -212,7 +214,7 @@ const SnakeGame = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [gameOver, navigate]);
+    }, [gameOver, navigate, showExitDialog]);
 
     // Toggle play/pause
     const togglePlay = () => {

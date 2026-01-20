@@ -78,6 +78,8 @@ const Match3Game = () => {
     // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
+            // Block keyboard when exit dialog is open
+            if (showExitDialog) return;
             if (isAnimating || gameOver) return;
 
             switch (e.key) {
@@ -118,7 +120,7 @@ const Match3Game = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cursor, isAnimating, gameOver, navigate]);
+    }, [cursor, isAnimating, gameOver, navigate, showExitDialog]);
 
     // Generate random candy index
     const generateCandy = useCallback((excludeIndices = []) => {

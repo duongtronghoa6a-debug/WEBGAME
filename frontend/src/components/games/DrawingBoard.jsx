@@ -66,6 +66,9 @@ const DrawingBoard = () => {
     // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
+            // Block keyboard when exit dialog is open
+            if (showExitDialog) return;
+
             switch (e.key) {
                 case 'ArrowLeft':
                     e.preventDefault();
@@ -113,7 +116,7 @@ const DrawingBoard = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cursor, currentColor, pixels, isDrawing]);
+    }, [cursor, currentColor, pixels, isDrawing, showExitDialog, navigate]);
 
     const moveCursor = (dx, dy) => {
         setCursor(prev => ({
