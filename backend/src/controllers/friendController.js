@@ -1,4 +1,5 @@
 const Friend = require('../models/Friend');
+const db = require('../config/database');
 
 /**
  * Get friends list
@@ -69,6 +70,15 @@ exports.sendRequest = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 error: { code: 'VALIDATION_ERROR', message: 'Cannot send friend request to yourself' }
+            });
+        }
+
+        // Check if target user is an admin - don't allow friend requests to admins
+        const targetUser = await db('users').where({ id: friend_id }).first();
+        if (targetUser && (targetUser.role === 'admin' || targetUser.is_admin)) {
+            return res.status(400).json({
+                success: false,
+                error: { code: 'ADMIN_NOT_ALLOWED', message: 'Cannot send friend request to admin users' }
             });
         }
 

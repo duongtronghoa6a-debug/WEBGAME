@@ -68,11 +68,11 @@ const Friends = () => {
             const res = await api.get(`/users?search=${searchQuery}`);
             const users = res.data.data || [];
 
-            // Check friend status for each user
+            // Check friend status for each user (with cache-buster to avoid stale data)
             const usersWithStatus = await Promise.all(
                 users.map(async (user) => {
                     try {
-                        const statusRes = await api.get(`/friends/status/${user.id}`);
+                        const statusRes = await api.get(`/friends/status/${user.id}?_t=${Date.now()}`);
                         return { ...user, friendStatus: statusRes.data.data };
                     } catch {
                         return { ...user, friendStatus: null };

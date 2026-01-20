@@ -63,7 +63,7 @@ class Friend {
                 this.where({ user_id: userId, friend_id: friendId })
                     .orWhere({ user_id: friendId, friend_id: userId });
             })
-            .where({ status: 'accepted' })
+            .where({ 'friends.status': 'accepted' })
             .del();
     }
 
@@ -79,7 +79,7 @@ class Friend {
             });
 
         if (status !== 'all') {
-            query = query.where({ status });
+            query = query.where({ 'friends.status': status });
         }
 
         const countQuery = query.clone();
@@ -129,7 +129,7 @@ class Friend {
         const offset = (page - 1) * limit;
 
         const requests = await db(this.tableName)
-            .where({ friend_id: userId, status: 'pending' })
+            .where({ friend_id: userId, 'friends.status': 'pending' })
             .join('users', 'users.id', '=', `${this.tableName}.user_id`)
             .select(
                 `${this.tableName}.id`,
@@ -143,7 +143,7 @@ class Friend {
             .offset(offset);
 
         const [{ count }] = await db(this.tableName)
-            .where({ friend_id: userId, status: 'pending' })
+            .where({ friend_id: userId, 'friends.status': 'pending' })
             .count();
 
         return {
@@ -166,7 +166,7 @@ class Friend {
                 this.where({ user_id: userId })
                     .orWhere({ friend_id: userId });
             })
-            .where({ status: 'accepted' });
+            .where({ 'friends.status': 'accepted' });
 
         return friendships.map(f =>
             f.user_id === userId ? f.friend_id : f.user_id
