@@ -1,84 +1,109 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save, Eye, EyeOff, Lightbulb } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Save } from 'lucide-react';
 import api from '../../services/api';
+import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
 import './MemoryGame.css';
 
-const CARD_SYMBOLS = ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🦁', '🐸', '🐵', '🐔', '🦄'];
+// Card colors for memory pairs
+const CARD_COLORS = [
+    LED_COLORS.CANDY_RED,
+    LED_COLORS.CANDY_ORANGE,
+    LED_COLORS.CANDY_YELLOW,
+    LED_COLORS.CANDY_GREEN,
+    LED_COLORS.CANDY_BLUE,
+    LED_COLORS.CANDY_PURPLE,
+    LED_COLORS.PLAYER_1,
+    LED_COLORS.PLAYER_2
+];
+
+const BOARD_SIZE = 4; // 4x4 = 16 cards = 8 pairs
 
 const MemoryGame = () => {
     const navigate = useNavigate();
 
-    // Game config
-    const [gridSize, setGridSize] = useState(4); // 4x4 = 16 cards = 8 pairs
-
-    // Game state
     const [cards, setCards] = useState([]);
     const [flippedCards, setFlippedCards] = useState([]);
     const [matchedPairs, setMatchedPairs] = useState([]);
     const [moves, setMoves] = useState(0);
-    const [isLocked, setIsLocked] = useState(false);
+    const [score, setScore] = useState(0);
     const [gameOver, setGameOver] = useState(false);
+    const [isChecking, setIsChecking] = useState(false);
     const [timeSpent, setTimeSpent] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [showPreview, setShowPreview] = useState(false);
-    const [cursor, setCursor] = useState(0);
+    const [cursor, setCursor] = useState({ row: 0, col: 0 });
     const [showInstructions, setShowInstructions] = useState(true);
+    const [pixels, setPixels] = useState([]);
 
     // Initialize game
     useEffect(() => {
         initializeGame();
-    }, [gridSize]);
+    }, []);
+
+    // Convert cards to LED pixels
+    useEffect(() => {
+        const newPixels = Array(BOARD_SIZE).fill(null).map(() =>
+            Array(BOARD_SIZE).fill(null)
+        );
+
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const cardIndex = r * BOARD_SIZE + c;
+                const card = cards[cardIndex];
+
+                if (card !== undefined) {
+                    const isFlipped = flippedCards.includes(cardIndex);
+                    const isMatched = matchedPairs.includes(card);
+
+                    if (isFlipped || isMatched) {
+                        // Show card color
+                        newPixels[r][c] = CARD_COLORS[card % CARD_COLORS.length];
+                    } else {
+                        // Card back - dim color
+                        newPixels[r][c] = LED_COLORS.CARD_BACK;
+                    }
+                }
+            }
+        }
+
+        setPixels(newPixels);
+    }, [cards, flippedCards, matchedPairs]);
 
     // Timer
     useEffect(() => {
-        if (!isPlaying || gameOver) return;
+        if (gameOver) return;
         const interval = setInterval(() => {
             setTimeSpent(prev => prev + 1);
         }, 1000);
         return () => clearInterval(interval);
-    }, [isPlaying, gameOver]);
-
-    // Check game over
-    useEffect(() => {
-        const totalPairs = (gridSize * gridSize) / 2;
-        if (matchedPairs.length === totalPairs && matchedPairs.length > 0) {
-            setGameOver(true);
-            setIsPlaying(false);
-        }
-    }, [matchedPairs, gridSize]);
+    }, [gameOver]);
 
     // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (isLocked || showPreview) return;
-
-            const totalCards = gridSize * gridSize;
+            if (isChecking || gameOver) return;
 
             switch (e.key) {
                 case 'ArrowLeft':
                     e.preventDefault();
-                    setCursor(prev => Math.max(0, prev - 1));
+                    setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
                     break;
                 case 'ArrowRight':
                     e.preventDefault();
-                    setCursor(prev => Math.min(totalCards - 1, prev + 1));
+                    setCursor(prev => ({ ...prev, col: Math.min(BOARD_SIZE - 1, prev.col + 1) }));
                     break;
                 case 'ArrowUp':
                     e.preventDefault();
-                    setCursor(prev => Math.max(0, prev - gridSize));
+                    setCursor(prev => ({ ...prev, row: Math.max(0, prev.row - 1) }));
                     break;
                 case 'ArrowDown':
                     e.preventDefault();
-                    setCursor(prev => Math.min(totalCards - 1, prev + gridSize));
+                    setCursor(prev => ({ ...prev, row: Math.min(BOARD_SIZE - 1, prev.row + 1) }));
                     break;
                 case 'Enter':
                     e.preventDefault();
-                    if (cards[cursor]) {
-                        handleCardClick(cards[cursor].id);
-                    }
+                    handleCardFlip(cursor.row * BOARD_SIZE + cursor.col);
                     break;
                 case 'Escape':
                     navigate('/games');
@@ -92,101 +117,75 @@ const MemoryGame = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cursor, gridSize, cards, isLocked, showPreview, navigate]);
+    }, [cursor, isChecking, gameOver, navigate, flippedCards, matchedPairs]);
 
     // Initialize game
     const initializeGame = useCallback(() => {
-        const totalCards = gridSize * gridSize;
-        const pairsNeeded = totalCards / 2;
-        const symbols = CARD_SYMBOLS.slice(0, pairsNeeded);
-
-        // Create pairs
-        const cardPairs = [...symbols, ...symbols].map((symbol, index) => ({
-            id: index,
-            symbol,
-            isFlipped: false,
-            isMatched: false
-        }));
-
+        // Create pairs of cards
+        const pairs = [];
+        for (let i = 0; i < (BOARD_SIZE * BOARD_SIZE) / 2; i++) {
+            pairs.push(i, i);
+        }
         // Shuffle
-        for (let i = cardPairs.length - 1; i > 0; i--) {
+        for (let i = pairs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [cardPairs[i], cardPairs[j]] = [cardPairs[j], cardPairs[i]];
+            [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
         }
 
-        setCards(cardPairs);
+        setCards(pairs);
         setFlippedCards([]);
         setMatchedPairs([]);
         setMoves(0);
-        setTimeSpent(0);
+        setScore(0);
         setGameOver(false);
-        setIsPlaying(false);
-        setShowPreview(false);
-    }, [gridSize]);
+        setTimeSpent(0);
+        setCursor({ row: 0, col: 0 });
+    }, []);
 
-    // Preview all cards
-    const handlePreview = () => {
-        setShowPreview(true);
-        setTimeout(() => {
-            setShowPreview(false);
-            setIsPlaying(true);
-        }, 3000);
-    };
+    // Handle card flip
+    const handleCardFlip = useCallback((index) => {
+        if (isChecking || flippedCards.length >= 2) return;
+        if (flippedCards.includes(index)) return;
+        if (matchedPairs.includes(cards[index])) return;
 
-    // Handle card click
-    const handleCardClick = (cardId) => {
-        if (isLocked || gameOver || showPreview) return;
-        if (!isPlaying) setIsPlaying(true);
-
-        const card = cards.find(c => c.id === cardId);
-        if (!card || card.isMatched || flippedCards.includes(cardId)) return;
-
-        const newFlipped = [...flippedCards, cardId];
+        const newFlipped = [...flippedCards, index];
         setFlippedCards(newFlipped);
 
         if (newFlipped.length === 2) {
             setMoves(prev => prev + 1);
-            setIsLocked(true);
+            setIsChecking(true);
 
             const [first, second] = newFlipped;
-            const firstCard = cards.find(c => c.id === first);
-            const secondCard = cards.find(c => c.id === second);
+            if (cards[first] === cards[second]) {
+                // Match!
+                setTimeout(() => {
+                    setMatchedPairs(prev => [...prev, cards[first]]);
+                    setScore(prev => prev + 100);
+                    setFlippedCards([]);
+                    setIsChecking(false);
 
-            if (firstCard.symbol === secondCard.symbol) {
-                // Match found
-                setMatchedPairs(prev => [...prev, firstCard.symbol]);
-                setCards(prev => prev.map(c =>
-                    c.id === first || c.id === second
-                        ? { ...c, isMatched: true }
-                        : c
-                ));
-                setFlippedCards([]);
-                setIsLocked(false);
+                    // Check win
+                    if (matchedPairs.length + 1 === (BOARD_SIZE * BOARD_SIZE) / 2) {
+                        setGameOver(true);
+                        setScore(prev => prev + Math.max(0, 500 - timeSpent));
+                    }
+                }, 500);
             } else {
-                // No match - flip back after delay
+                // No match
                 setTimeout(() => {
                     setFlippedCards([]);
-                    setIsLocked(false);
+                    setIsChecking(false);
                 }, 1000);
             }
         }
-    };
-
-    // Calculate score
-    const calculateScore = () => {
-        const totalPairs = (gridSize * gridSize) / 2;
-        const perfectMoves = totalPairs;
-        const efficiency = Math.max(0, 100 - ((moves - perfectMoves) * 5));
-        const timeBonus = Math.max(0, 300 - timeSpent);
-        return Math.round((efficiency * 10) + timeBonus);
-    };
+    }, [isChecking, flippedCards, matchedPairs, cards, timeSpent]);
 
     // Save game
     const saveGame = async () => {
         try {
             await api.post('/games/6/sessions', {
-                state: { cards, matchedPairs, moves },
-                score: calculateScore(),
+                state: { cards, matchedPairs, moves, score },
+                score,
                 time_spent: timeSpent
             });
             alert('Game đã được lưu!');
@@ -195,7 +194,6 @@ const MemoryGame = () => {
         }
     };
 
-    // Format time
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -203,35 +201,16 @@ const MemoryGame = () => {
     };
 
     // GameController handlers
-    const handleControllerLeft = () => {
-        if (isLocked || showPreview) return;
-        setCursor(prev => Math.max(0, prev - 1));
-    };
+    const handleLeft = () => setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
+    const handleRight = () => setCursor(prev => ({ ...prev, col: Math.min(BOARD_SIZE - 1, prev.col + 1) }));
+    const handleEnter = () => handleCardFlip(cursor.row * BOARD_SIZE + cursor.col);
+    const handleBack = () => navigate('/games');
+    const handleHint = () => setShowInstructions(prev => !prev);
 
-    const handleControllerRight = () => {
-        if (isLocked || showPreview) return;
-        const totalCards = gridSize * gridSize;
-        setCursor(prev => Math.min(totalCards - 1, prev + 1));
-    };
-
-    const handleControllerEnter = () => {
-        if (isLocked || showPreview || gameOver) return;
-        if (cards[cursor]) {
-            handleCardClick(cards[cursor].id);
-        }
-    };
-
-    const handleControllerBack = () => {
-        navigate('/games');
-    };
-
-    const handleControllerHint = () => {
-        setShowInstructions(prev => !prev);
-    };
+    const allMatched = matchedPairs.length === (BOARD_SIZE * BOARD_SIZE) / 2;
 
     return (
-        <div className="memory-game">
-            {/* Header */}
+        <div className="memory-game led-memory-game">
             <div className="game-header">
                 <button className="back-btn" onClick={() => navigate('/games')}>
                     <ArrowLeft size={20} />
@@ -239,113 +218,70 @@ const MemoryGame = () => {
                 </button>
                 <h1>🧠 Cờ Trí Nhớ</h1>
                 <div className="game-stats">
+                    <span className="stat">🏆 {score}</span>
                     <span className="stat">🎯 {moves} lượt</span>
-                    <span className="stat">⏱️ {formatTime(timeSpent)}</span>
                 </div>
             </div>
 
-            {/* Controls */}
             <div className="game-controls">
-                <div className="size-selector">
-                    <label>Kích thước:</label>
-                    <select value={gridSize} onChange={(e) => setGridSize(Number(e.target.value))} disabled={isPlaying && !gameOver}>
-                        <option value={4}>4×4 (8 cặp)</option>
-                        <option value={6}>6×6 (18 cặp)</option>
-                    </select>
-                </div>
-                <div className="control-buttons">
-                    <button className="control-btn" onClick={handlePreview} disabled={isPlaying || showPreview}>
-                        <Eye size={18} />
-                        Xem trước
-                    </button>
-                    <button className="control-btn" onClick={initializeGame}>
-                        <RotateCcw size={18} />
-                        Chơi lại
-                    </button>
-                    <button className="control-btn" onClick={saveGame} disabled={isLocked}>
-                        <Save size={18} />
-                        Lưu
-                    </button>
-                </div>
+                <button className="control-btn" onClick={initializeGame}>
+                    <RotateCcw size={18} />
+                    Chơi lại
+                </button>
+                <button className="control-btn" onClick={saveGame} disabled={isChecking}>
+                    <Save size={18} />
+                    Lưu game
+                </button>
             </div>
 
-            {/* Game status */}
             <div className="game-status">
-                {gameOver ? (
+                {allMatched ? (
                     <div className="status-message win">
-                        🎉 Chúc mừng! Bạn đã hoàn thành với {moves} lượt - Điểm: {calculateScore()}
-                    </div>
-                ) : showPreview ? (
-                    <div className="status-message">
-                        👀 Ghi nhớ vị trí các thẻ...
+                        🎉 Chúc mừng! Điểm: {score}
                     </div>
                 ) : (
                     <div className="status-message">
-                        {matchedPairs.length}/{(gridSize * gridSize) / 2} cặp đã tìm được
+                        ⏱️ {formatTime(timeSpent)} | Tìm {(BOARD_SIZE * BOARD_SIZE) / 2 - matchedPairs.length} cặp còn lại
                     </div>
                 )}
             </div>
 
-            {/* Game board */}
             <div className="board-container">
-                <div
-                    className="game-board memory-board"
-                    style={{
-                        gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-                        gridTemplateRows: `repeat(${gridSize}, 1fr)`
-                    }}
-                >
-                    {cards.map((card, index) => {
-                        const isFlipped = flippedCards.includes(card.id) || card.isMatched || showPreview;
-                        const isCursor = cursor === index;
-
-                        return (
-                            <div
-                                key={card.id}
-                                className={`memory-card ${isFlipped ? 'flipped' : ''} ${card.isMatched ? 'matched' : ''} ${isCursor ? 'cursor' : ''}`}
-                                onClick={() => handleCardClick(card.id)}
-                            >
-                                <div className="card-inner">
-                                    <div className="card-front">❓</div>
-                                    <div className="card-back">{card.symbol}</div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                <LEDMatrix
+                    pixels={pixels}
+                    rows={BOARD_SIZE}
+                    cols={BOARD_SIZE}
+                    cursor={cursor}
+                    dotSize="large"
+                    showBorder={true}
+                />
             </div>
 
-            {/* 5-Button Game Controller */}
             <GameController
-                onLeft={handleControllerLeft}
-                onRight={handleControllerRight}
-                onEnter={handleControllerEnter}
-                onBack={handleControllerBack}
-                onHint={handleControllerHint}
+                onLeft={handleLeft}
+                onRight={handleRight}
+                onEnter={handleEnter}
+                onBack={handleBack}
+                onHint={handleHint}
                 disabledButtons={{
-                    left: isLocked || showPreview,
-                    right: isLocked || showPreview,
-                    enter: isLocked || showPreview || gameOver,
+                    enter: isChecking || allMatched,
                     back: false,
                     hint: false
                 }}
             />
 
-            {/* Instructions */}
             {showInstructions && (
                 <div className="game-instructions">
                     <h3>Hướng dẫn</h3>
                     <ul>
-                        <li>Dùng phím mũi tên hoặc 5-button để di chuyển cursor</li>
+                        <li>Dùng ← ↑ → ↓ để di chuyển cursor</li>
                         <li>Nhấn Enter để lật thẻ</li>
-                        <li>Tìm 2 thẻ có hình giống nhau</li>
-                        <li>Cố gắng hoàn thành với ít lượt nhất</li>
-                        <li>Nhấn Esc để quay lại, H để ẩn/hiện hướng dẫn</li>
+                        <li>Tìm các cặp thẻ cùng màu</li>
+                        <li>Hoàn thành nhanh để được điểm thưởng</li>
                     </ul>
                 </div>
             )}
 
-            {/* Rating & Comments */}
             <GameRatingComment gameId={6} />
         </div>
     );

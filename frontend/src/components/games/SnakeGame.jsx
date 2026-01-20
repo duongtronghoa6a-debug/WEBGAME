@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Play, Pause, Save, Lightbulb } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Play, Pause, Save } from 'lucide-react';
 import api from '../../services/api';
+import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
 import './SnakeGame.css';
@@ -32,6 +33,34 @@ const SnakeGame = () => {
     const [highScore, setHighScore] = useState(0);
     const [timeSpent, setTimeSpent] = useState(0);
     const [showInstructions, setShowInstructions] = useState(true);
+    const [pixels, setPixels] = useState([]);
+
+    // Convert game state to LED pixels
+    useEffect(() => {
+        const newPixels = Array(boardSize.height).fill(null).map(() =>
+            Array(boardSize.width).fill(null)
+        );
+
+        // Draw snake
+        snake.forEach((segment, index) => {
+            if (newPixels[segment.y]) {
+                if (index === 0) {
+                    // Snake head
+                    newPixels[segment.y][segment.x] = LED_COLORS.SNAKE_HEAD;
+                } else {
+                    // Snake body
+                    newPixels[segment.y][segment.x] = LED_COLORS.SNAKE_BODY;
+                }
+            }
+        });
+
+        // Draw food
+        if (newPixels[food.y]) {
+            newPixels[food.y][food.x] = LED_COLORS.FOOD;
+        }
+
+        setPixels(newPixels);
+    }, [snake, food, boardSize]);
 
     // Generate random food position
     const generateFood = useCallback((currentSnake) => {
@@ -96,7 +125,6 @@ const SnakeGame = () => {
                         return newScore;
                     });
                     setFood(generateFood(newSnake));
-                    // Increase speed slightly
                     setSpeed(prev => Math.max(50, prev - 2));
                 } else {
                     newSnake.pop();
@@ -154,6 +182,7 @@ const SnakeGame = () => {
                     }
                     break;
                 case ' ':
+                case 'Enter':
                     e.preventDefault();
                     if (!gameOver) {
                         setIsPlaying(prev => !prev);
@@ -173,26 +202,7 @@ const SnakeGame = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [gameOver]);
-
-    // Mobile controls
-    const handleDirectionClick = (newDirection) => {
-        if (gameOver) return;
-
-        if (newDirection === DIRECTIONS.UP && directionRef.current !== DIRECTIONS.DOWN) {
-            directionRef.current = DIRECTIONS.UP;
-            setDirection(DIRECTIONS.UP);
-        } else if (newDirection === DIRECTIONS.DOWN && directionRef.current !== DIRECTIONS.UP) {
-            directionRef.current = DIRECTIONS.DOWN;
-            setDirection(DIRECTIONS.DOWN);
-        } else if (newDirection === DIRECTIONS.LEFT && directionRef.current !== DIRECTIONS.RIGHT) {
-            directionRef.current = DIRECTIONS.LEFT;
-            setDirection(DIRECTIONS.LEFT);
-        } else if (newDirection === DIRECTIONS.RIGHT && directionRef.current !== DIRECTIONS.LEFT) {
-            directionRef.current = DIRECTIONS.RIGHT;
-            setDirection(DIRECTIONS.RIGHT);
-        }
-    };
+    }, [gameOver, navigate]);
 
     // Toggle play/pause
     const togglePlay = () => {
@@ -202,7 +212,7 @@ const SnakeGame = () => {
         setIsPlaying(prev => !prev);
     };
 
-    // GameController handlers
+    // GameController handlers - Left/Right controls direction
     const handleControllerLeft = () => {
         if (gameOver) return;
         if (directionRef.current !== DIRECTIONS.RIGHT) {
@@ -257,7 +267,7 @@ const SnakeGame = () => {
     };
 
     return (
-        <div className="snake-game">
+        <div className="snake-game led-snake-game">
             {/* Header */}
             <div className="game-header">
                 <button className="back-btn" onClick={() => navigate('/games')}>
@@ -295,63 +305,20 @@ const SnakeGame = () => {
                     </div>
                 ) : (
                     <div className="status-message">
-                        {isPlaying ? '🎮 Đang chơi...' : '⏸️ Nhấn Space hoặc nút Play để bắt đầu'}
+                        {isPlaying ? '🎮 Đang chơi - Dùng ← → để đổi hướng' : '⏸️ Nhấn Enter để bắt đầu'}
                     </div>
                 )}
             </div>
 
-            {/* Game board */}
+            {/* LED Matrix game board */}
             <div className="board-container">
-                <div
-                    className="game-board snake-board"
-                    style={{
-                        gridTemplateColumns: `repeat(${boardSize.width}, 1fr)`,
-                        gridTemplateRows: `repeat(${boardSize.height}, 1fr)`
-                    }}
-                >
-                    {Array(boardSize.height).fill(null).map((_, y) =>
-                        Array(boardSize.width).fill(null).map((_, x) => {
-                            const isSnakeHead = snake[0]?.x === x && snake[0]?.y === y;
-                            const isSnakeBody = snake.slice(1).some(s => s.x === x && s.y === y);
-                            const isFood = food.x === x && food.y === y;
-
-                            return (
-                                <div
-                                    key={`${x}-${y}`}
-                                    className={`cell ${isSnakeHead ? 'snake-head' : ''} ${isSnakeBody ? 'snake-body' : ''} ${isFood ? 'food' : ''}`}
-                                >
-                                    {isSnakeHead && '🐍'}
-                                    {isFood && '🍎'}
-                                </div>
-                            );
-                        })
-                    )}
-                </div>
-            </div>
-
-            {/* Mobile controls */}
-            <div className="mobile-controls">
-                <div className="control-row">
-                    <button className="direction-btn" onClick={() => handleDirectionClick(DIRECTIONS.UP)}>
-                        ↑
-                    </button>
-                </div>
-                <div className="control-row">
-                    <button className="direction-btn" onClick={() => handleDirectionClick(DIRECTIONS.LEFT)}>
-                        ←
-                    </button>
-                    <button className="direction-btn center" onClick={togglePlay}>
-                        {isPlaying ? '⏸' : '▶'}
-                    </button>
-                    <button className="direction-btn" onClick={() => handleDirectionClick(DIRECTIONS.RIGHT)}>
-                        →
-                    </button>
-                </div>
-                <div className="control-row">
-                    <button className="direction-btn" onClick={() => handleDirectionClick(DIRECTIONS.DOWN)}>
-                        ↓
-                    </button>
-                </div>
+                <LEDMatrix
+                    pixels={pixels}
+                    rows={boardSize.height}
+                    cols={boardSize.width}
+                    dotSize="small"
+                    showBorder={true}
+                />
             </div>
 
             {/* 5-Button Game Controller */}
@@ -376,10 +343,10 @@ const SnakeGame = () => {
                     <h3>Hướng dẫn</h3>
                     <ul>
                         <li>Dùng phím mũi tên hoặc WASD để điều khiển</li>
-                        <li>Hoặc dùng 5-button controller bên dưới</li>
-                        <li>Ăn 🍎 để tăng điểm và dài thêm</li>
+                        <li>Hoặc dùng 5-button controller: ← → đổi hướng</li>
+                        <li>Ăn 🍎 (điểm xanh) để tăng điểm và dài thêm</li>
                         <li>Tránh va vào tường và thân rắn</li>
-                        <li>Nhấn Space/Enter để tạm dừng/tiếp tục</li>
+                        <li>Nhấn Enter để tạm dừng/tiếp tục</li>
                         <li>Nhấn Esc để quay lại, H để ẩn/hiện hướng dẫn</li>
                     </ul>
                 </div>
