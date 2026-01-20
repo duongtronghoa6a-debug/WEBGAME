@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 
 /**
- * Seed users (≥5 users với đầy đủ thông tin)
+ * Seed users (10 users với đầy đủ thông tin)
  */
 exports.seed = async function (knex) {
     // Delete existing data
@@ -57,9 +57,41 @@ exports.seed = async function (knex) {
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player5',
             is_admin: false
+        },
+        {
+            id: 'g7777777-7777-7777-7777-777777777777',
+            email: '07@gmail.com',
+            username: 'TetrisPro',
+            password_hash: password,
+            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player6',
+            is_admin: false
+        },
+        {
+            id: 'h8888888-8888-8888-8888-888888888888',
+            email: '08@gmail.com',
+            username: 'SnakeKing',
+            password_hash: password,
+            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player7',
+            is_admin: false
+        },
+        {
+            id: 'i9999999-9999-9999-9999-999999999999',
+            email: '09@gmail.com',
+            username: 'MemoryMaster',
+            password_hash: password,
+            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player8',
+            is_admin: false
+        },
+        {
+            id: 'j0000000-0000-0000-0000-000000000000',
+            email: '10@gmail.com',
+            username: 'Match3King',
+            password_hash: password,
+            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player9',
+            is_admin: false
         }
     ]);
 
-    console.log('✅ Seeded 6 users');
+    console.log('✅ Seeded 10 users');
 };
 

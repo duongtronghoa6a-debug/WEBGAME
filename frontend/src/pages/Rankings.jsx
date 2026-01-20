@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Trophy, Medal, Star, Gamepad2, Clock, Target } from 'lucide-react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import Pagination from '../components/common/Pagination';
 import './Rankings.css';
 
 const Rankings = () => {
+    const { user } = useAuth();
     const [rankings, setRankings] = useState([]);
     const [selectedGame, setSelectedGame] = useState('all');
     const [filterType, setFilterType] = useState('all'); // 'all', 'friends', 'personal'
@@ -87,6 +89,14 @@ const Rankings = () => {
         return '';
     };
 
+    // Get display name - show "Tôi" if it's current user
+    const getDisplayName = (player) => {
+        if (player.user_id === user?.id || player.username === user?.username) {
+            return 'Tôi';
+        }
+        return player.username;
+    };
+
     if (loading) {
         return (
             <div className="loading-container">
@@ -136,7 +146,7 @@ const Rankings = () => {
                 <div className="stat-card">
                     <Target size={24} />
                     <div className="stat-info">
-                        <span className="stat-value">{rankings.reduce((a, b) => a + b.games_played, 0)}</span>
+                        <span className="stat-value">{rankings.reduce((a, b) => a + (b.games_played || 0), 0)}</span>
                         <span className="stat-label">Tổng games</span>
                     </div>
                 </div>
@@ -160,20 +170,20 @@ const Rankings = () => {
                 </div>
 
                 <div className="table-body">
-                    {rankings.map((player) => (
-                        <div key={player.rank} className={`table-row ${getRankClass(player.rank)}`}>
+                    {rankings.map((player, index) => (
+                        <div key={player.user_id || index} className={`table-row ${getRankClass(player.rank)} ${getDisplayName(player) === 'Tôi' ? 'is-me' : ''}`}>
                             <span className="col-rank">
                                 {getRankIcon(player.rank)}
                             </span>
                             <span className="col-player">
                                 <div className="player-avatar">
-                                    {player.username.charAt(0).toUpperCase()}
+                                    {getDisplayName(player).charAt(0).toUpperCase()}
                                 </div>
-                                <span className="player-name">{player.username}</span>
+                                <span className="player-name">{getDisplayName(player)}</span>
                             </span>
-                            <span className="col-score">{player.total_score.toLocaleString()}</span>
-                            <span className="col-games">{player.games_played}</span>
-                            <span className="col-avg">{player.avg_score}</span>
+                            <span className="col-score">{(player.total_score || 0).toLocaleString()}</span>
+                            <span className="col-games">{player.games_played || 0}</span>
+                            <span className="col-avg">{player.avg_score || 0}</span>
                         </div>
                     ))}
                 </div>
