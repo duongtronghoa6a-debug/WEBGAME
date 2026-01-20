@@ -5,10 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import './Profile.css';
 
 const Profile = () => {
-    const { user, setUser } = useAuth();
+    const authContext = useAuth();
+    const user = authContext?.user;
+    const setUser = authContext?.setUser;
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
+    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -141,7 +144,7 @@ const Profile = () => {
                     <div className="stat-card">
                         <Trophy size={24} />
                         <div className="stat-info">
-                            <span className="stat-value">{stats.totalScore.toLocaleString()}</span>
+                            <span className="stat-value">{(stats?.totalScore || 0).toLocaleString()}</span>
                             <span className="stat-label">Tổng điểm</span>
                         </div>
                     </div>

@@ -4,11 +4,12 @@
 
 **Tên dự án:** Board Game Web Application  
 **Môn học:** Phát triển Ứng dụng Web  
-**Công nghệ:** ReactJS (Frontend) + Express.js (Backend) + Supabase (Database)
+**Công nghệ:** ReactJS (Frontend) + Express.js (Backend) + Supabase (Database)  
+**Người thực hiện:** Dương Trọng Hòa - MSSV: 23120127
 
 ### Mục tiêu
 Xây dựng một ứng dụng web chơi game dạng bàn cờ (Board Game) với đầy đủ các tính năng:
-- Nhiều loại game khác nhau
+- Nhiều loại game khác nhau (8 games)
 - Hệ thống người dùng và xã hội
 - Quản trị viên quản lý hệ thống
 
@@ -16,7 +17,7 @@ Xây dựng một ứng dụng web chơi game dạng bàn cờ (Board Game) vớ
 
 ## 2. Tính Năng Chính
 
-### 2.1. Hệ Thống Game (7 Games)
+### 2.1. Hệ Thống Game (8 Games)
 
 | # | Game | Mô tả | Đặc điểm |
 |---|------|-------|----------|
@@ -27,6 +28,7 @@ Xây dựng một ứng dụng web chơi game dạng bàn cờ (Board Game) vớ
 | 5 | **Ghép hàng 3** | Match-3 như Candy Crush | Combo scoring |
 | 6 | **Cờ trí nhớ** | Lật bài tìm cặp giống nhau | Đếm lượt, thời gian |
 | 7 | **Bảng vẽ tự do** | Canvas vẽ tự do | Chọn màu, brush size |
+| 8 | **Tetris** | Game xếp hình cổ điển | Clear line, level up |
 
 ### 2.2. Điều Khiển 5 Nút
 
@@ -58,10 +60,11 @@ Xây dựng một ứng dụng web chơi game dạng bàn cờ (Board Game) vớ
 
 | Tính năng | Mô tả |
 |-----------|-------|
-| **Dashboard** | Tổng quan hệ thống |
-| **Quản lý Users** | CRUD người dùng, phân quyền |
+| **Dashboard** | Tổng quan hệ thống (users, sessions, messages) |
+| **Quản lý Users** | Xem danh sách, Ban/Unban, Delete users |
 | **Thống kê** | Game hot, lượt chơi, tài khoản mới |
 | **Quản lý Games** | Bật/tắt game, cấu hình kích thước |
+| **Recent Activities** | Hoạt động gần đây trong hệ thống |
 
 ---
 
@@ -73,13 +76,14 @@ Xây dựng một ứng dụng web chơi game dạng bàn cờ (Board Game) vớ
 - **State:** React Context API
 - **HTTP Client:** Axios
 - **Styling:** CSS Variables (Dark/Light mode)
+- **Icons:** Lucide React
 
 ### 3.2. Backend  
 - **Runtime:** Node.js
 - **Framework:** Express.js
 - **Database ORM:** Knex.js
 - **Database:** PostgreSQL (Supabase)
-- **Auth:** JWT + Supabase Auth
+- **Auth:** JWT + bcrypt
 - **API Docs:** Swagger/OpenAPI
 
 ### 3.3. Database
@@ -141,6 +145,10 @@ Xây dựng một ứng dụng web chơi game dạng bàn cờ (Board Game) vớ
 ```
 project/
 ├── readme/              # Tài liệu thiết kế
+├── tests/               # Test files
+│   ├── api.test.js      # Automated API tests
+│   ├── BAO_CAO_TEST.md  # Test report
+│   └── MANUAL_TESTING.md
 ├── backend/             # Express.js API
 │   ├── src/
 │   │   ├── config/      # Cấu hình
@@ -154,8 +162,8 @@ project/
 ├── frontend/            # ReactJS App
 │   ├── src/
 │   │   ├── components/  # React components
+│   │   │   └── games/   # 10 game components
 │   │   ├── pages/       # Page components
-│   │   ├── layouts/     # Layout components (V)
 │   │   ├── context/     # React Context
 │   │   ├── services/    # API services
 │   │   └── styles/      # CSS files
@@ -167,18 +175,24 @@ project/
 
 ## 7. Dữ Liệu Demo
 
-### Users (≥5 người dùng)
-1. **admin** - Quản trị viên hệ thống
-2. **player1** - Người chơi chuyên Caro, rank cao
-3. **player2** - Người chơi đa dạng các game
-4. **player3** - Người chơi mới, ít thành tựu
-5. **player4** - Người chơi casual
-6. **player5** - Người chơi competitive
+### Users (9 người dùng)
+
+| Email | Username | Role |
+|-------|----------|------|
+| 01@gmail.com | admin | Admin |
+| 02@gmail.com | player02 | User |
+| 03@gmail.com | CaroMaster | User |
+| 04@gmail.com | ProGamer | User |
+| 05@gmail.com | GameLover | User |
+| 06@gmail.com | player06 | User |
+| 07@gmail.com | player07 | User |
+| 08@gmail.com | player08 | User |
+| 09@gmail.com | player09 | User |
 
 ### Sample Data
-- 20+ game sessions
+- 47+ game sessions
 - 10+ friend relationships
-- 15+ messages
+- 17+ messages
 - 10+ achievements
 - 15+ ratings
 - 15+ comments
@@ -187,10 +201,12 @@ project/
 
 ## 8. Điểm Cộng Đã Triển Khai
 
-- ✅ **Theme rõ ràng** - Material-UI inspired design
-- ✅ **AI Computer** - Nhiều cấp độ cho game Caro
-- ✅ **Hướng dẫn theo kịch bản** - Interactive tutorials
+- ✅ **Theme rõ ràng** - Dark/Light mode với CSS Variables
+- ✅ **AI Computer** - 3 cấp độ (Easy, Medium, Hard) cho game Caro
+- ✅ **8 Games** - Đa dạng thể loại game
 - ✅ **Pagination** - Cho tất cả danh sách
+- ✅ **Real-time Stats** - Dashboard cập nhật động
+- ✅ **Automated Tests** - 15 API test cases
 
 ---
 
@@ -205,3 +221,8 @@ project/
 | Hướng dẫn Game | [06-huong-dan-game.md](./06-huong-dan-game.md) |
 | Hướng dẫn Cài đặt | [07-huong-dan-cai-dat.md](./07-huong-dan-cai-dat.md) |
 | Câu hỏi Vấn đáp | [08-cau-hoi-van-dap.md](./08-cau-hoi-van-dap.md) |
+
+---
+
+**Người thực hiện:** Dương Trọng Hòa  
+**MSSV:** 23120127
