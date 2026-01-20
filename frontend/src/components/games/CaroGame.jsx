@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Save, Lightbulb, Play, Pause } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Save, Lightbulb } from 'lucide-react';
 import api from '../../services/api';
+import LEDMatrix, { LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
 import GameRatingComment from '../common/GameRatingComment';
 import './CaroGame.css';
@@ -38,6 +39,7 @@ const CaroGame = () => {
     const [sessionId, setSessionId] = useState(null);
     const [hint, setHint] = useState(null);
     const [gameName, setGameName] = useState('Caro Hàng 5');
+    const [pixels, setPixels] = useState([]);
 
     // Game config based on gameId
     useEffect(() => {
@@ -54,7 +56,7 @@ const CaroGame = () => {
                 setGameName('🎯 Caro Hàng 4');
                 break;
             case 3: // Tic-Tac-Toe
-                setBoardSize({ rows: 3, cols: 3 });
+                setBoardSize({ rows: 9, cols: 9 }); // 3x3 scaled 3x for visibility
                 setWinCondition(3);
                 setGameName('⭕ Tic-Tac-Toe');
                 break;
@@ -70,13 +72,62 @@ const CaroGame = () => {
         initializeGame();
     }, [boardSize]);
 
+    // Convert board to LED pixels
+    useEffect(() => {
+        const newPixels = Array(boardSize.rows).fill(null).map(() =>
+            Array(boardSize.cols).fill(null)
+        );
+
+        const scale = parseInt(gameId) === 3 ? 3 : 1; // 3x scale for Tic-tac-toe
+        const logicalRows = parseInt(gameId) === 3 ? 3 : boardSize.rows;
+        const logicalCols = parseInt(gameId) === 3 ? 3 : boardSize.cols;
+
+        for (let r = 0; r < logicalRows; r++) {
+            for (let c = 0; c < logicalCols; c++) {
+                const cellValue = board[r]?.[c];
+                let color = null;
+
+                if (cellValue === 1) {
+                    color = LED_COLORS.PLAYER_1; // Red for X
+                } else if (cellValue === 2) {
+                    color = LED_COLORS.PLAYER_2; // Cyan for O
+                }
+
+                // Check if winning cell
+                const isWinning = winningCells.some(([wr, wc]) => wr === r && wc === c);
+                if (isWinning) {
+                    color = LED_COLORS.WINNING;
+                }
+
+                // Check if hint cell
+                if (hint && hint.row === r && hint.col === c) {
+                    color = LED_COLORS.CURSOR;
+                }
+
+                // Scale for Tic-tac-toe
+                if (scale > 1 && color) {
+                    for (let dr = 0; dr < scale; dr++) {
+                        for (let dc = 0; dc < scale; dc++) {
+                            if (newPixels[r * scale + dr]) {
+                                newPixels[r * scale + dr][c * scale + dc] = color;
+                            }
+                        }
+                    }
+                } else if (color) {
+                    newPixels[r][c] = color;
+                }
+            }
+        }
+
+        setPixels(newPixels);
+    }, [board, winningCells, hint, boardSize, gameId]);
+
     // Load saved game session on mount
     useEffect(() => {
         const loadSavedGame = async () => {
             try {
                 const res = await api.get('/games/sessions?completed=false');
                 if (res.data.success && res.data.data && res.data.data.length > 0) {
-                    // Find session for current gameId
                     const savedSession = res.data.data.find(s => s.game_id === parseInt(gameId));
                     if (savedSession && savedSession.state) {
                         const state = savedSession.state;
@@ -107,10 +158,14 @@ const CaroGame = () => {
         return () => clearInterval(interval);
     }, [isPlaying, gameOver]);
 
-    // Keyboard controls
+    // Keyboard controls - ONLY 5-button, no direct click
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (gameOver || isAiThinking || currentPlayer !== 1) return;
+
+            const scale = parseInt(gameId) === 3 ? 3 : 1;
+            const logicalRows = parseInt(gameId) === 3 ? 3 : boardSize.rows;
+            const logicalCols = parseInt(gameId) === 3 ? 3 : boardSize.cols;
 
             switch (e.key) {
                 case 'ArrowLeft':
@@ -119,7 +174,7 @@ const CaroGame = () => {
                     break;
                 case 'ArrowRight':
                     e.preventDefault();
-                    setCursor(prev => ({ ...prev, col: Math.min(boardSize.cols - 1, prev.col + 1) }));
+                    setCursor(prev => ({ ...prev, col: Math.min(logicalCols - 1, prev.col + 1) }));
                     break;
                 case 'ArrowUp':
                     e.preventDefault();
@@ -127,11 +182,11 @@ const CaroGame = () => {
                     break;
                 case 'ArrowDown':
                     e.preventDefault();
-                    setCursor(prev => ({ ...prev, row: Math.min(boardSize.rows - 1, prev.row + 1) }));
+                    setCursor(prev => ({ ...prev, row: Math.min(logicalRows - 1, prev.row + 1) }));
                     break;
                 case 'Enter':
                     e.preventDefault();
-                    handleCellClick(cursor.row, cursor.col);
+                    handleMove(cursor.row, cursor.col);
                     break;
                 case 'Escape':
                     navigate('/games');
@@ -145,17 +200,37 @@ const CaroGame = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cursor, gameOver, isAiThinking, currentPlayer, boardSize]);
+    }, [cursor, gameOver, isAiThinking, currentPlayer, boardSize, gameId]);
 
     // GameController handlers
-    const handleLeft = () => setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
-    const handleRight = () => setCursor(prev => ({ ...prev, col: Math.min(boardSize.cols - 1, prev.col + 1) }));
-    const handleEnter = () => handleCellClick(cursor.row, cursor.col);
+    const handleLeft = () => {
+        const logicalCols = parseInt(gameId) === 3 ? 3 : boardSize.cols;
+        setCursor(prev => ({ ...prev, col: Math.max(0, prev.col - 1) }));
+    };
+
+    const handleRight = () => {
+        const logicalCols = parseInt(gameId) === 3 ? 3 : boardSize.cols;
+        setCursor(prev => ({ ...prev, col: Math.min(logicalCols - 1, prev.col + 1) }));
+    };
+
+    const handleUp = () => {
+        setCursor(prev => ({ ...prev, row: Math.max(0, prev.row - 1) }));
+    };
+
+    const handleDown = () => {
+        const logicalRows = parseInt(gameId) === 3 ? 3 : boardSize.rows;
+        setCursor(prev => ({ ...prev, row: Math.min(logicalRows - 1, prev.row + 1) }));
+    };
+
+    const handleEnter = () => handleMove(cursor.row, cursor.col);
     const handleBack = () => navigate('/games');
 
     const initializeGame = () => {
-        const newBoard = Array(boardSize.rows).fill(null).map(() =>
-            Array(boardSize.cols).fill(0)
+        const logicalRows = parseInt(gameId) === 3 ? 3 : boardSize.rows;
+        const logicalCols = parseInt(gameId) === 3 ? 3 : boardSize.cols;
+
+        const newBoard = Array(logicalRows).fill(null).map(() =>
+            Array(logicalCols).fill(0)
         );
         setBoard(newBoard);
         setCurrentPlayer(1);
@@ -166,11 +241,14 @@ const CaroGame = () => {
         setTimeSpent(0);
         setIsPlaying(true);
         setHint(null);
-        setCursor({ row: Math.floor(boardSize.rows / 2), col: Math.floor(boardSize.cols / 2) });
+        setCursor({ row: Math.floor(logicalRows / 2), col: Math.floor(logicalCols / 2) });
     };
 
     // Check winner
     const checkWinner = useCallback((board, row, col, player) => {
+        const logicalRows = board.length;
+        const logicalCols = board[0]?.length || 0;
+
         const directions = [
             [0, 1],   // horizontal
             [1, 0],   // vertical
@@ -182,21 +260,19 @@ const CaroGame = () => {
             let count = 1;
             const cells = [[row, col]];
 
-            // Check positive direction
             for (let i = 1; i < winCondition; i++) {
                 const r = row + dr * i;
                 const c = col + dc * i;
-                if (r >= 0 && r < boardSize.rows && c >= 0 && c < boardSize.cols && board[r][c] === player) {
+                if (r >= 0 && r < logicalRows && c >= 0 && c < logicalCols && board[r][c] === player) {
                     count++;
                     cells.push([r, c]);
                 } else break;
             }
 
-            // Check negative direction
             for (let i = 1; i < winCondition; i++) {
                 const r = row - dr * i;
                 const c = col - dc * i;
-                if (r >= 0 && r < boardSize.rows && c >= 0 && c < boardSize.cols && board[r][c] === player) {
+                if (r >= 0 && r < logicalRows && c >= 0 && c < logicalCols && board[r][c] === player) {
                     count++;
                     cells.push([r, c]);
                 } else break;
@@ -207,7 +283,7 @@ const CaroGame = () => {
             }
         }
         return null;
-    }, [boardSize, winCondition]);
+    }, [winCondition]);
 
     // AI Move
     const makeAiMove = useCallback((currentBoard) => {
@@ -235,11 +311,13 @@ const CaroGame = () => {
 
     // Find best move for AI
     const findBestMove = (board, player, depth) => {
+        const logicalRows = board.length;
+        const logicalCols = board[0]?.length || 0;
         const emptyCells = [];
-        for (let r = 0; r < boardSize.rows; r++) {
-            for (let c = 0; c < boardSize.cols; c++) {
+
+        for (let r = 0; r < logicalRows; r++) {
+            for (let c = 0; c < logicalCols; c++) {
                 if (board[r][c] === 0) {
-                    // Only consider cells near existing pieces
                     if (hasNeighbor(board, r, c)) {
                         emptyCells.push({ row: r, col: c, score: 0 });
                     }
@@ -248,19 +326,15 @@ const CaroGame = () => {
         }
 
         if (emptyCells.length === 0) {
-            // First move - center
-            return { row: Math.floor(boardSize.rows / 2), col: Math.floor(boardSize.cols / 2) };
+            return { row: Math.floor(logicalRows / 2), col: Math.floor(logicalCols / 2) };
         }
 
-        // Score each move
         for (const cell of emptyCells) {
             cell.score = evaluateMove(board, cell.row, cell.col, player);
         }
 
-        // Sort by score
         emptyCells.sort((a, b) => b.score - a.score);
 
-        // Add randomness for easy level
         if (aiLevel === 'easy' && Math.random() < 0.3) {
             const randomIndex = Math.floor(Math.random() * Math.min(5, emptyCells.length));
             return emptyCells[randomIndex];
@@ -270,12 +344,15 @@ const CaroGame = () => {
     };
 
     const hasNeighbor = (board, row, col) => {
+        const logicalRows = board.length;
+        const logicalCols = board[0]?.length || 0;
+
         for (let dr = -2; dr <= 2; dr++) {
             for (let dc = -2; dc <= 2; dc++) {
                 if (dr === 0 && dc === 0) continue;
                 const r = row + dr;
                 const c = col + dc;
-                if (r >= 0 && r < boardSize.rows && c >= 0 && c < boardSize.cols && board[r][c] !== 0) {
+                if (r >= 0 && r < logicalRows && c >= 0 && c < logicalCols && board[r][c] !== 0) {
                     return true;
                 }
             }
@@ -286,39 +363,36 @@ const CaroGame = () => {
     const evaluateMove = (board, row, col, player) => {
         let score = 0;
         const opponent = player === 1 ? 2 : 1;
-
-        // Check all directions
         const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
 
         for (const [dr, dc] of directions) {
-            // Score for player
             const playerLine = countLine(board, row, col, dr, dc, player);
             score += getLineScore(playerLine.count, playerLine.open);
-
-            // Score for blocking opponent
             const opponentLine = countLine(board, row, col, dr, dc, opponent);
             score += getLineScore(opponentLine.count, opponentLine.open) * 0.9;
         }
 
-        // Prefer center
-        const centerRow = boardSize.rows / 2;
-        const centerCol = boardSize.cols / 2;
+        const logicalRows = board.length;
+        const logicalCols = board[0]?.length || 0;
+        const centerRow = logicalRows / 2;
+        const centerCol = logicalCols / 2;
         const distanceToCenter = Math.abs(row - centerRow) + Math.abs(col - centerCol);
-        score += (boardSize.rows - distanceToCenter) * 0.1;
+        score += (logicalRows - distanceToCenter) * 0.1;
 
         return score;
     };
 
     const countLine = (board, row, col, dr, dc, player) => {
+        const logicalRows = board.length;
+        const logicalCols = board[0]?.length || 0;
         let count = 0;
         let open = 0;
 
-        // Positive direction
         let blocked = false;
         for (let i = 1; i < winCondition; i++) {
             const r = row + dr * i;
             const c = col + dc * i;
-            if (r < 0 || r >= boardSize.rows || c < 0 || c >= boardSize.cols) {
+            if (r < 0 || r >= logicalRows || c < 0 || c >= logicalCols) {
                 blocked = true;
                 break;
             }
@@ -328,12 +402,11 @@ const CaroGame = () => {
         }
         if (!blocked) open++;
 
-        // Negative direction
         blocked = false;
         for (let i = 1; i < winCondition; i++) {
             const r = row - dr * i;
             const c = col - dc * i;
-            if (r < 0 || r >= boardSize.rows || c < 0 || c >= boardSize.cols) {
+            if (r < 0 || r >= logicalRows || c < 0 || c >= logicalCols) {
                 blocked = true;
                 break;
             }
@@ -355,9 +428,9 @@ const CaroGame = () => {
         return 0;
     };
 
-    // Handle cell click
-    const handleCellClick = (row, col) => {
-        if (gameOver || board[row][col] !== 0 || currentPlayer !== 1 || isAiThinking) {
+    // Handle move - ONLY via Enter button, not click
+    const handleMove = (row, col) => {
+        if (gameOver || board[row]?.[col] !== 0 || currentPlayer !== 1 || isAiThinking) {
             return;
         }
 
@@ -425,8 +498,20 @@ const CaroGame = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    // Calculate LED cursor position (scaled for Tic-tac-toe)
+    const getLEDCursor = () => {
+        const scale = parseInt(gameId) === 3 ? 3 : 1;
+        if (scale > 1) {
+            return {
+                row: cursor.row * scale + 1,
+                col: cursor.col * scale + 1
+            };
+        }
+        return cursor;
+    };
+
     return (
-        <div className="caro-game">
+        <div className="caro-game led-caro-game">
             {/* Header */}
             <div className="game-header">
                 <button className="back-btn" onClick={() => navigate('/games')}>
@@ -478,39 +563,21 @@ const CaroGame = () => {
                     </div>
                 ) : (
                     <div className="status-message">
-                        {isAiThinking ? '🤔 AI đang suy nghĩ...' : '🎮 Lượt của bạn (X)'}
+                        {isAiThinking ? '🤔 AI đang suy nghĩ...' : '🎮 Lượt của bạn - Dùng ← ↑ → ↓ và Enter'}
                     </div>
                 )}
             </div>
 
-            {/* Game board */}
+            {/* LED Matrix Game board */}
             <div className="board-container">
-                <div
-                    className="game-board"
-                    style={{
-                        gridTemplateColumns: `repeat(${boardSize.cols}, 1fr)`,
-                        gridTemplateRows: `repeat(${boardSize.rows}, 1fr)`
-                    }}
-                >
-                    {board.map((row, rowIndex) =>
-                        row.map((cell, colIndex) => {
-                            const isWinning = winningCells.some(([r, c]) => r === rowIndex && c === colIndex);
-                            const isHint = hint && hint.row === rowIndex && hint.col === colIndex;
-                            const isCursor = cursor.row === rowIndex && cursor.col === colIndex;
-
-                            return (
-                                <div
-                                    key={`${rowIndex}-${colIndex}`}
-                                    className={`cell ${cell === 1 ? 'player-x' : cell === 2 ? 'player-o' : ''} ${isWinning ? 'winning' : ''} ${isHint ? 'hint' : ''} ${isCursor ? 'cursor' : ''}`}
-                                    onClick={() => handleCellClick(rowIndex, colIndex)}
-                                >
-                                    {cell === 1 && <span className="x">✕</span>}
-                                    {cell === 2 && <span className="o">○</span>}
-                                </div>
-                            );
-                        })
-                    )}
-                </div>
+                <LEDMatrix
+                    pixels={pixels}
+                    rows={boardSize.rows}
+                    cols={boardSize.cols}
+                    cursor={getLEDCursor()}
+                    dotSize={parseInt(gameId) === 3 ? 'large' : 'medium'}
+                    showBorder={true}
+                />
             </div>
 
             {/* 5-Button Game Controller */}
@@ -530,8 +597,8 @@ const CaroGame = () => {
             <div className="game-instructions">
                 <h3>Hướng dẫn</h3>
                 <ul>
-                    <li>Dùng nút ← → để di chuyển cursor, Enter để đặt quân</li>
-                    <li>Hoặc click trực tiếp vào ô trống</li>
+                    <li>Dùng nút ← ↑ → ↓ để di chuyển cursor</li>
+                    <li>Nhấn Enter để đặt quân (không click chuột)</li>
                     <li>Xếp {winCondition} quân liên tiếp (ngang/dọc/chéo) để thắng</li>
                     <li>Dùng nút Hint nếu cần gợi ý</li>
                 </ul>
