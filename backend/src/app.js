@@ -19,7 +19,7 @@ app.use(helmet());
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
         ? process.env.FRONTEND_URL
-        : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
+        : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'https://supportive-gratitude-production.up.railway.app'],
     credentials: true
 }));
 
@@ -86,11 +86,11 @@ app.listen(PORT, () => {
   ║   🎮 Board Game API Server                         ║
   ║                                                    ║
   ║   Server running on port ${PORT}                      ║
-  ║   Environment: ${process.env.NODE_ENV || 'development'}                     ║
+  ║   Environment: ${process.env.NODE_ENV || 'development'}                         ║ 
   ║                                                    ║
   ║   Endpoints:                                       ║
-  ║   - API:  http://localhost:${PORT}/api               ║
-  ║   - Docs: http://localhost:${PORT}/api-docs          ║
+  ║   - API:  http://localhost:${PORT}/api                ║
+  ║   - Docs: http://localhost:${PORT}/api-docs           ║
   ║                                                    ║
   ╚════════════════════════════════════════════════════╝
   `);
