@@ -149,7 +149,24 @@ exports.updateMyProfile = async (req, res) => {
 };
 
 /**
- * Get user profile
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User profile with stats
+ *       404:
+ *         description: User not found
  */
 exports.getProfile = async (req, res) => {
     try {
@@ -185,7 +202,34 @@ exports.getProfile = async (req, res) => {
 };
 
 /**
- * Update own profile
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               avatar_url:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ *       403:
+ *         description: Cannot update others
  */
 exports.updateProfile = async (req, res) => {
     try {
@@ -239,7 +283,22 @@ exports.updateProfile = async (req, res) => {
 };
 
 /**
- * Get user achievements
+ * @swagger
+ * /users/{id}/achievements:
+ *   get:
+ *     summary: Get user achievements
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of achievements
  */
 exports.getAchievements = async (req, res) => {
     try {
@@ -261,7 +320,16 @@ exports.getAchievements = async (req, res) => {
 };
 
 /**
- * Get current user's achievements
+ * @swagger
+ * /achievements:
+ *   get:
+ *     summary: Get current user achievements
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user achievements
  */
 exports.getMyAchievements = async (req, res) => {
     try {

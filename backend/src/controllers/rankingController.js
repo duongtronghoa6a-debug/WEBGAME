@@ -100,7 +100,22 @@ exports.getFriendsRanking = async (req, res) => {
 };
 
 /**
- * Get personal ranking history
+ * @swagger
+ * /rankings/{gameId}/personal:
+ *   get:
+ *     summary: Get personal ranking history
+ *     tags: [Rankings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Personal ranking history
  */
 exports.getPersonalRanking = async (req, res) => {
     try {

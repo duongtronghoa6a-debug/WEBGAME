@@ -167,7 +167,24 @@ exports.sendRequest = async (req, res) => {
 };
 
 /**
- * Accept friend request
+ * @swagger
+ * /friends/{requestId}/accept:
+ *   put:
+ *     summary: Accept friend request
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: requestId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Request accepted
+ *       404:
+ *         description: Request not found
  */
 exports.acceptRequest = async (req, res) => {
     try {
@@ -197,7 +214,22 @@ exports.acceptRequest = async (req, res) => {
 };
 
 /**
- * Reject friend request
+ * @swagger
+ * /friends/{requestId}/reject:
+ *   put:
+ *     summary: Reject friend request
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: requestId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Request rejected
  */
 exports.rejectRequest = async (req, res) => {
     try {
@@ -219,7 +251,24 @@ exports.rejectRequest = async (req, res) => {
 };
 
 /**
- * Remove friend or cancel pending request by ID
+ * @swagger
+ * /friends/{friendId}:
+ *   delete:
+ *     summary: Remove friend or cancel request
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: friendId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Removed successfully
+ *       404:
+ *         description: Not found
  */
 exports.removeFriend = async (req, res) => {
     try {
@@ -249,7 +298,22 @@ exports.removeFriend = async (req, res) => {
 };
 
 /**
- * Check friendship status
+ * @swagger
+ * /friends/status/{userId}:
+ *   get:
+ *     summary: Check friendship status
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Status info
  */
 exports.checkStatus = async (req, res) => {
     try {

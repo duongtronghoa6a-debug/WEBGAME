@@ -194,7 +194,16 @@ exports.markAsRead = async (req, res) => {
 };
 
 /**
- * Get unread count
+ * @swagger
+ * /messages/unread:
+ *   get:
+ *     summary: Get unread message count
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Unread count
  */
 exports.getUnreadCount = async (req, res) => {
     try {

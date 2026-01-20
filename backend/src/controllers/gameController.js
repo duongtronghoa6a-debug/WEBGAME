@@ -87,7 +87,38 @@ exports.getById = async (req, res) => {
 };
 
 /**
- * Create game session (start game)
+ * @swagger
+ * /games/{id}/sessions:
+ *   post:
+ *     summary: Create game session (start/save game)
+ *     tags: [Games]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               config:
+ *                 type: object
+ *               state:
+ *                 type: object
+ *               score:
+ *                 type: integer
+ *               time_spent:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Game session created
+ *       404:
+ *         description: Game not found
  */
 exports.createSession = async (req, res) => {
     try {
@@ -149,7 +180,38 @@ exports.createSession = async (req, res) => {
 };
 
 /**
- * Update game session (save game)
+ * @swagger
+ * /games/sessions/{sessionId}:
+ *   put:
+ *     summary: Update game session (save game)
+ *     tags: [Games]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               state:
+ *                 type: object
+ *               score:
+ *                 type: integer
+ *               time_spent:
+ *                 type: integer
+ *               completed:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Game saved
+ *       403:
+ *         description: Not your session
  */
 exports.updateSession = async (req, res) => {
     try {
@@ -204,7 +266,24 @@ exports.updateSession = async (req, res) => {
 };
 
 /**
- * Get game session (load game)
+ * @swagger
+ * /games/sessions/{sessionId}:
+ *   get:
+ *     summary: Get game session (load game)
+ *     tags: [Games]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Session data
+ *       404:
+ *         description: Session not found
  */
 exports.getSession = async (req, res) => {
     try {
@@ -251,7 +330,29 @@ exports.getSession = async (req, res) => {
 };
 
 /**
- * Get user's saved games
+ * @swagger
+ * /games/sessions:
+ *   get:
+ *     summary: Get user's saved games
+ *     tags: [Games]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: completed
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: List of saved games
  */
 exports.getSavedGames = async (req, res) => {
     try {
@@ -277,7 +378,33 @@ exports.getSavedGames = async (req, res) => {
 };
 
 /**
- * Rate game
+ * @swagger
+ * /games/{id}/ratings:
+ *   post:
+ *     summary: Rate a game
+ *     tags: [Games]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               stars:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *     responses:
+ *       201:
+ *         description: Rating submitted
  */
 exports.rateGame = async (req, res) => {
     try {
@@ -308,7 +435,20 @@ exports.rateGame = async (req, res) => {
 };
 
 /**
- * Get game ratings (average and user's rating)
+ * @swagger
+ * /games/{id}/ratings:
+ *   get:
+ *     summary: Get game ratings
+ *     tags: [Games]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Rating stats and user rating
  */
 exports.getRatings = async (req, res) => {
     try {
@@ -343,7 +483,31 @@ exports.getRatings = async (req, res) => {
 
 
 /**
- * Comment on game
+ * @swagger
+ * /games/{id}/comments:
+ *   post:
+ *     summary: Comment on a game
+ *     tags: [Games]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Comment created
  */
 exports.commentGame = async (req, res) => {
     try {
@@ -382,7 +546,28 @@ exports.commentGame = async (req, res) => {
 };
 
 /**
- * Get game comments
+ * @swagger
+ * /games/{id}/comments:
+ *   get:
+ *     summary: Get game comments
+ *     tags: [Games]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of comments
  */
 exports.getComments = async (req, res) => {
     try {

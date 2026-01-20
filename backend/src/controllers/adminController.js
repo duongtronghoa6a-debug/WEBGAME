@@ -192,7 +192,36 @@ exports.getUsers = async (req, res) => {
 };
 
 /**
- * Update user (admin)
+ * @swagger
+ * /admin/users/{id}:
+ *   put:
+ *     summary: Update user (admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               is_admin:
+ *                 type: boolean
+ *               status:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User updated
+ *       404:
+ *         description: User not found
  */
 exports.updateUser = async (req, res) => {
     try {
@@ -244,7 +273,24 @@ exports.updateUser = async (req, res) => {
 };
 
 /**
- * Delete user (admin)
+ * @swagger
+ * /admin/users/{id}:
+ *   delete:
+ *     summary: Delete user (admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deleted
+ *       400:
+ *         description: Cannot delete yourself
  */
 exports.deleteUser = async (req, res) => {
     try {
@@ -274,7 +320,16 @@ exports.deleteUser = async (req, res) => {
 };
 
 /**
- * Get all games (admin) - including disabled
+ * @swagger
+ * /admin/games:
+ *   get:
+ *     summary: Get all games (admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All games including disabled
  */
 exports.getGames = async (req, res) => {
     try {
@@ -294,7 +349,34 @@ exports.getGames = async (req, res) => {
 };
 
 /**
- * Update game config (admin)
+ * @swagger
+ * /admin/games/{id}:
+ *   put:
+ *     summary: Update game config (admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               enabled:
+ *                 type: boolean
+ *               config:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Game updated
+ *       404:
+ *         description: Game not found
  */
 exports.updateGame = async (req, res) => {
     try {
