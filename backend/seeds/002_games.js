@@ -1,5 +1,5 @@
 /**
- * Seed games (16 games từ thư viện C++ + 7 games yêu cầu)
+ * Seed games - Chỉ giữ lại games đã có logic implement
  */
 exports.seed = async function (knex) {
     await knex('games').del();
@@ -91,111 +91,28 @@ exports.seed = async function (knex) {
             instructions: '🎨 **BẢNG VẼ TỰ DO**\n\n**Công cụ:**\n- Chọn màu sắc\n- Chọn kích thước cọ\n- Tẩy và xóa\n- Lưu tranh\n\n**Điều khiển:**\n- Click & kéo để vẽ'
         },
 
-        // GAMES BỔ SUNG TỪ THƯ VIỆN C++
+        // BONUS GAMES - ĐÃ IMPLEMENT
         {
             id: 8,
             name: 'Tetris',
             type: 'tetris',
             config: JSON.stringify({
                 boardSize: { rows: 20, cols: 10 },
-                initialSpeed: 300
+                initialSpeed: 500
             }),
             enabled: true,
-            instructions: '🧱 **TETRIS**\n\n**Luật chơi:**\n- Xếp các khối rơi xuống\n- Hoàn thành hàng để xóa\n- Game over khi chạm đỉnh\n\n**Điều khiển:**\n- ← →: Di chuyển\n- ↑: Xoay\n- ↓: Rơi nhanh'
-        },
-        {
-            id: 9,
-            name: 'Doodle Jump',
-            type: 'doodlejump',
-            config: JSON.stringify({
-                gravity: 0.5,
-                jumpForce: 15
-            }),
-            enabled: true,
-            instructions: '🦘 **DOODLE JUMP**\n\n**Luật chơi:**\n- Nhảy lên các platform\n- Tránh quái vật\n- Leo cao nhất có thể\n\n**Điều khiển:**\n- ← →: Di chuyển trái/phải'
-        },
-        {
-            id: 10,
-            name: 'Arkanoid',
-            type: 'arkanoid',
-            config: JSON.stringify({
-                lives: 3,
-                brickRows: 5
-            }),
-            enabled: true,
-            instructions: '🧱 **ARKANOID**\n\n**Luật chơi:**\n- Điều khiển thanh để bật bóng\n- Phá hết gạch để thắng\n- Đừng để bóng rơi!\n\n**Điều khiển:**\n- ← →: Di chuyển thanh'
+            instructions: '🧱 **TETRIS**\n\n**Luật chơi:**\n- Xếp các khối rơi xuống\n- Hoàn thành hàng để xóa và ghi điểm\n- Game over khi chạm đỉnh\n\n**Điều khiển:**\n- ← →: Di chuyển\n- ↑/Enter: Xoay\n- ↓: Rơi nhanh\n- Space/Hint: Thả nhanh'
         },
         {
             id: 11,
-            name: 'Minesweeper',
+            name: 'Dò Mìn',
             type: 'minesweeper',
             config: JSON.stringify({
-                boardSize: { rows: 10, cols: 10 },
-                mines: 15
+                boardSize: { rows: 9, cols: 9 },
+                mines: 10
             }),
             enabled: true,
-            instructions: '💣 **MINESWEEPER**\n\n**Luật chơi:**\n- Mở các ô không có mìn\n- Số = số mìn xung quanh\n- Cắm cờ để đánh dấu mìn\n\n**Điều khiển:**\n- ENTER: Mở ô\n- HINT: Đặt cờ'
-        },
-        {
-            id: 12,
-            name: 'Fifteen Puzzle',
-            type: 'fifteenpuzzle',
-            config: JSON.stringify({
-                size: 4
-            }),
-            enabled: true,
-            instructions: '🔢 **FIFTEEN PUZZLE**\n\n**Luật chơi:**\n- Sắp xếp số từ 1-15\n- Di chuyển ô vào chỗ trống\n- Hoàn thành nhanh nhất\n\n**Điều khiển:**\n- ← → ↑ ↓: Di chuyển ô'
-        },
-        {
-            id: 13,
-            name: 'Racing',
-            type: 'racing',
-            config: JSON.stringify({
-                lanes: 3,
-                speed: 5
-            }),
-            enabled: true,
-            instructions: '🏎️ **RACING**\n\n**Luật chơi:**\n- Tránh chướng ngại vật\n- Ăn items để ghi điểm\n- Tốc độ tăng dần\n\n**Điều khiển:**\n- ← →: Đổi làn'
-        },
-        {
-            id: 14,
-            name: 'Xonix',
-            type: 'xonix',
-            config: JSON.stringify({
-                boardSize: { rows: 40, cols: 60 }
-            }),
-            enabled: true,
-            instructions: '⬜ **XONIX**\n\n**Luật chơi:**\n- Vẽ đường để chiếm đất\n- Đừng để bóng chạm đường đang vẽ\n- Chiếm 80% để thắng'
-        },
-        {
-            id: 15,
-            name: 'Mahjong Solitaire',
-            type: 'mahjong',
-            config: JSON.stringify({
-                layout: 'turtle'
-            }),
-            enabled: true,
-            instructions: '🀄 **MAHJONG SOLITAIRE**\n\n**Luật chơi:**\n- Ghép cặp quân giống nhau\n- Chỉ lấy được quân tự do\n- Xóa hết bàn để thắng'
-        },
-        {
-            id: 16,
-            name: 'Chess',
-            type: 'chess',
-            config: JSON.stringify({
-                timeLimit: 600
-            }),
-            enabled: true,
-            instructions: '♟️ **CHESS**\n\n**Luật chơi:**\n- Cờ vua chuẩn quốc tế\n- Chiếu bí vua đối thủ để thắng\n\n**Điều khiển:**\n- Click để chọn và di chuyển quân'
-        },
-        {
-            id: 17,
-            name: 'Asteroids',
-            type: 'asteroids',
-            config: JSON.stringify({
-                lives: 3
-            }),
-            enabled: true,
-            instructions: '☄️ **ASTEROIDS**\n\n**Luật chơi:**\n- Bắn phá thiên thạch\n- Tránh va chạm\n- Ghi điểm cao nhất\n\n**Điều khiển:**\n- ← →: Xoay\n- ↑: Tăng tốc\n- ENTER: Bắn'
+            instructions: '💣 **DÒ MÌN**\n\n**Luật chơi:**\n- Mở các ô không có mìn\n- Số = số mìn xung quanh\n- Cắm cờ để đánh dấu mìn nghi ngờ\n\n**Điều khiển:**\n- ← → ↑ ↓: Di chuyển cursor\n- ENTER: Mở ô\n- HINT/F: Đặt cờ'
         },
         {
             id: 18,
@@ -210,5 +127,5 @@ exports.seed = async function (knex) {
         }
     ]);
 
-    console.log('✅ Seeded 18 games');
+    console.log('✅ Seeded 10 games (7 bắt buộc + 3 bonus)');
 };
