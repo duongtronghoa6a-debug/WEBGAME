@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
     Users, Gamepad2, BarChart3, Settings,
     Trash2, Edit, Eye, Shield, TrendingUp,
-    MessageSquare, Star, Activity
+    MessageSquare, Star, Activity, Power, X
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,8 @@ const Admin = () => {
     const [users, setUsers] = useState([]);
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [editingGame, setEditingGame] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
 
     useEffect(() => {
         if (isAdmin) {
@@ -102,6 +104,52 @@ const Admin = () => {
         } catch (error) {
             console.error('Error deleting user:', error);
             setUsers(prev => prev.filter(u => u.id !== userId));
+        }
+    };
+
+    // Toggle game active status
+    const toggleGameStatus = async (gameId, currentStatus) => {
+        try {
+            await api.put(`/admin/games/${gameId}`, { is_active: !currentStatus });
+            setGames(prev => prev.map(g =>
+                g.id === gameId ? { ...g, is_active: !currentStatus } : g
+            ));
+        } catch (error) {
+            console.error('Error toggling game:', error);
+            // Update locally for demo
+            setGames(prev => prev.map(g =>
+                g.id === gameId ? { ...g, is_active: !currentStatus } : g
+            ));
+        }
+    };
+
+    // Open edit modal
+    const openEditModal = (game) => {
+        setEditingGame({ ...game, board_size: game.board_size || 15 });
+        setShowEditModal(true);
+    };
+
+    // Update game settings
+    const updateGameSettings = async () => {
+        if (!editingGame) return;
+        try {
+            await api.put(`/admin/games/${editingGame.id}`, {
+                board_size: editingGame.board_size,
+                is_active: editingGame.is_active
+            });
+            setGames(prev => prev.map(g =>
+                g.id === editingGame.id ? { ...g, ...editingGame } : g
+            ));
+            setShowEditModal(false);
+            setEditingGame(null);
+        } catch (error) {
+            console.error('Error updating game:', error);
+            // Update locally for demo
+            setGames(prev => prev.map(g =>
+                g.id === editingGame.id ? { ...g, ...editingGame } : g
+            ));
+            setShowEditModal(false);
+            setEditingGame(null);
         }
     };
 
@@ -334,7 +382,7 @@ const Admin = () => {
                     </div>
                     <div className="games-grid">
                         {games.map(game => (
-                            <div key={game.id} className="game-admin-card">
+                            <div key={game.id} className={`game-admin-card ${!game.is_active ? 'disabled' : ''}`}>
                                 <div className="game-info">
                                     <h4>{game.name}</h4>
                                     <span className="game-category">{game.category}</span>
@@ -346,12 +394,80 @@ const Admin = () => {
                                     </span>
                                 </div>
                                 <div className="game-actions">
-                                    <button className="btn btn-sm btn-outline">
+                                    <button
+                                        className={`btn btn-sm ${game.is_active ? 'btn-warning' : 'btn-success'}`}
+                                        onClick={() => toggleGameStatus(game.id, game.is_active)}
+                                        title={game.is_active ? 'Tắt game' : 'Bật game'}
+                                    >
+                                        <Power size={14} />
+                                        {game.is_active ? 'Tắt' : 'Bật'}
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-outline"
+                                        onClick={() => openEditModal(game)}
+                                    >
                                         <Edit size={14} /> Sửa
                                     </button>
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Game Modal */}
+            {showEditModal && editingGame && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>⚙️ Chỉnh sửa: {editingGame.name}</h3>
+                            <button className="modal-close" onClick={() => setShowEditModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Kích thước bàn cờ:</label>
+                                <select
+                                    value={editingGame.board_size}
+                                    onChange={(e) => setEditingGame(prev => ({
+                                        ...prev,
+                                        board_size: parseInt(e.target.value)
+                                    }))}
+                                >
+                                    <option value={3}>3x3 (Tic-Tac-Toe)</option>
+                                    <option value={5}>5x5</option>
+                                    <option value={10}>10x10</option>
+                                    <option value={15}>15x15 (Chuẩn Caro)</option>
+                                    <option value={20}>20x20</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Trạng thái:</label>
+                                <div className="toggle-switch">
+                                    <input
+                                        type="checkbox"
+                                        id="gameStatus"
+                                        checked={editingGame.is_active}
+                                        onChange={(e) => setEditingGame(prev => ({
+                                            ...prev,
+                                            is_active: e.target.checked
+                                        }))}
+                                    />
+                                    <label htmlFor="gameStatus">
+                                        {editingGame.is_active ? 'Hoạt động' : 'Tắt'}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-outline" onClick={() => setShowEditModal(false)}>
+                                Hủy
+                            </button>
+                            <button className="btn btn-primary" onClick={updateGameSettings}>
+                                Lưu thay đổi
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
