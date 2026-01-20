@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LEDMatrix, { GAME_ICONS, LED_COLORS } from '../common/LEDMatrix';
 import GameController from '../common/GameController';
@@ -10,7 +10,7 @@ import './LEDGameMenu.css';
  * Navigate bằng Left/Right, chọn bằng Enter
  */
 
-const GAMES = [
+const DEFAULT_GAMES = [
     { id: 1, name: 'Caro Hàng 5', type: 'caro', icon: 'caro' },
     { id: 2, name: 'Caro Hàng 4', type: 'caro', icon: 'caro' },
     { id: 3, name: 'Tic-Tac-Toe', type: 'tictactoe', icon: 'caro' },
@@ -23,7 +23,7 @@ const GAMES = [
     { id: 10, name: 'Dò Mìn', type: 'minesweeper', icon: 'minesweeper' },
 ];
 
-const MATRIX_SIZE = 15; // 15x15 display
+const MATRIX_SIZE = 15;
 
 const LEDGameMenu = () => {
     const navigate = useNavigate();
@@ -31,10 +31,13 @@ const LEDGameMenu = () => {
     const [pixels, setPixels] = useState([]);
     const [isAnimating, setIsAnimating] = useState(false);
     const [apiGames, setApiGames] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isNavigating, setIsNavigating] = useState(false);
 
     // Fetch games from API
     useEffect(() => {
         const fetchGames = async () => {
+            setIsLoading(true);
             try {
                 const res = await api.get('/games');
                 if (res.data.success) {
@@ -42,32 +45,36 @@ const LEDGameMenu = () => {
                 }
             } catch (error) {
                 console.log('Using default game list');
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchGames();
     }, []);
 
-    // Merge API games with default games
-    const games = apiGames.length > 0
-        ? GAMES.map(g => {
-            const apiGame = apiGames.find(ag => ag.id === g.id);
-            return apiGame ? { ...g, ...apiGame, enabled: apiGame.is_enabled !== false } : g;
-        }).filter(g => g.enabled !== false)
-        : GAMES;
+    // Merge API games with default games - memoized to prevent recalculation
+    const games = useMemo(() => {
+        if (apiGames.length > 0) {
+            return DEFAULT_GAMES.map(g => {
+                const apiGame = apiGames.find(ag => ag.id === g.id);
+                return apiGame ? { ...g, ...apiGame, enabled: apiGame.is_enabled !== false } : g;
+            }).filter(g => g.enabled !== false);
+        }
+        return DEFAULT_GAMES;
+    }, [apiGames]);
 
     // Generate LED matrix pixels from current game icon
-    const generatePixels = useCallback((gameIndex) => {
+    const generatePixels = useCallback((gameIndex, gameList) => {
         const newPixels = Array(MATRIX_SIZE).fill(null).map(() =>
             Array(MATRIX_SIZE).fill(null)
         );
 
-        const game = games[gameIndex];
+        const game = gameList[gameIndex];
         if (!game) return newPixels;
 
         const icon = GAME_ICONS[game.icon] || GAME_ICONS.caro;
         const iconSize = icon.length;
 
-        // Center the 5x5 icon in the 15x15 matrix, scaled 2x
         const startRow = Math.floor((MATRIX_SIZE - iconSize * 2) / 2);
         const startCol = Math.floor((MATRIX_SIZE - iconSize * 2) / 2);
 
@@ -76,7 +83,6 @@ const LEDGameMenu = () => {
             for (let c = 0; c < iconSize; c++) {
                 const color = icon[r][c];
                 if (color) {
-                    // 2x2 block for each pixel
                     newPixels[startRow + r * 2][startCol + c * 2] = color;
                     newPixels[startRow + r * 2][startCol + c * 2 + 1] = color;
                     newPixels[startRow + r * 2 + 1][startCol + c * 2] = color;
@@ -85,7 +91,6 @@ const LEDGameMenu = () => {
             }
         }
 
-        // Add navigation indicators (arrows) at sides
         // Left arrow if not first
         if (gameIndex > 0) {
             newPixels[7][1] = LED_COLORS.CURSOR;
@@ -95,7 +100,7 @@ const LEDGameMenu = () => {
         }
 
         // Right arrow if not last
-        if (gameIndex < games.length - 1) {
+        if (gameIndex < gameList.length - 1) {
             newPixels[7][13] = LED_COLORS.CURSOR;
             newPixels[6][12] = LED_COLORS.CURSOR;
             newPixels[7][12] = LED_COLORS.CURSOR;
@@ -103,27 +108,28 @@ const LEDGameMenu = () => {
         }
 
         // Game index indicator at bottom
-        for (let i = 0; i < games.length && i < 10; i++) {
-            const dotCol = Math.floor((MATRIX_SIZE - games.length) / 2) + i;
+        const indicatorCount = Math.min(gameList.length, 10);
+        for (let i = 0; i < indicatorCount; i++) {
+            const dotCol = Math.floor((MATRIX_SIZE - indicatorCount) / 2) + i;
             newPixels[13][dotCol] = i === gameIndex
                 ? LED_COLORS.WINNING
                 : LED_COLORS.EMPTY;
         }
 
         return newPixels;
-    }, [games]);
+    }, []);
 
-    // Update pixels when selection changes
+    // Update pixels when selection changes - fixed dependencies
     useEffect(() => {
-        if (!isAnimating) {
-            setPixels(generatePixels(selectedIndex));
+        if (!isAnimating && games.length > 0) {
+            setPixels(generatePixels(selectedIndex, games));
         }
-    }, [selectedIndex, generatePixels, isAnimating]);
+    }, [selectedIndex, games, isAnimating, generatePixels]);
 
     // Keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (isAnimating) return;
+            if (isAnimating || isNavigating) return;
 
             switch (e.key) {
                 case 'ArrowLeft':
@@ -147,9 +153,8 @@ const LEDGameMenu = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedIndex, isAnimating, games.length]);
+    }, [selectedIndex, isAnimating, isNavigating, games.length]);
 
-    // Navigation handlers
     const handleLeft = () => {
         if (selectedIndex > 0) {
             setIsAnimating(true);
@@ -168,7 +173,8 @@ const LEDGameMenu = () => {
 
     const handleEnter = () => {
         const game = games[selectedIndex];
-        if (game) {
+        if (game && !isNavigating) {
+            setIsNavigating(true);
             navigate(`/play/${game.id}`);
         }
     };
@@ -178,7 +184,6 @@ const LEDGameMenu = () => {
     };
 
     const handleHint = () => {
-        // Show game info or instructions
         const game = games[selectedIndex];
         if (game) {
             alert(`${game.name}\n\nNhấn Enter để chơi\nDùng ← → để chọn game khác`);
@@ -186,6 +191,21 @@ const LEDGameMenu = () => {
     };
 
     const currentGame = games[selectedIndex];
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="led-game-menu">
+                <div className="menu-header">
+                    <h1>🎮 Chọn Game</h1>
+                </div>
+                <div className="led-loading">
+                    <div className="loading-spinner"></div>
+                    <p>Đang tải danh sách game...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="led-game-menu">
@@ -197,13 +217,20 @@ const LEDGameMenu = () => {
             </div>
 
             <div className="led-display-container">
-                <LEDMatrix
-                    pixels={pixels}
-                    rows={MATRIX_SIZE}
-                    cols={MATRIX_SIZE}
-                    dotSize="medium"
-                    showBorder={true}
-                />
+                {isNavigating ? (
+                    <div className="led-navigating">
+                        <div className="loading-spinner"></div>
+                        <p>Đang tải game...</p>
+                    </div>
+                ) : (
+                    <LEDMatrix
+                        pixels={pixels}
+                        rows={MATRIX_SIZE}
+                        cols={MATRIX_SIZE}
+                        dotSize="medium"
+                        showBorder={true}
+                    />
+                )}
             </div>
 
             <div className="current-game-info">
@@ -220,8 +247,9 @@ const LEDGameMenu = () => {
                 onBack={handleBack}
                 onHint={handleHint}
                 disabledButtons={{
-                    left: selectedIndex === 0,
-                    right: selectedIndex === games.length - 1
+                    left: selectedIndex === 0 || isNavigating,
+                    right: selectedIndex === games.length - 1 || isNavigating,
+                    enter: isNavigating
                 }}
             />
 
