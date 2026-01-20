@@ -69,6 +69,28 @@ const TetrisGame = () => {
         initializeGame();
     }, [initializeGame]);
 
+    // Load saved game on mount
+    useEffect(() => {
+        const loadSavedGame = async () => {
+            try {
+                const res = await api.get('/games/sessions?completed=false');
+                if (res.data.success && res.data.data && res.data.data.length > 0) {
+                    const saved = res.data.data.find(s => s.game_id === 8);
+                    if (saved && saved.state) {
+                        const state = saved.state;
+                        if (state.board) setBoard(state.board);
+                        if (state.score) setScore(state.score);
+                        if (state.level) setLevel(state.level);
+                        if (state.lines) setLines(state.lines);
+                    }
+                }
+            } catch (error) {
+                console.error('Load saved game error:', error);
+            }
+        };
+        loadSavedGame();
+    }, []);
+
     // Convert board to LED pixels
     useEffect(() => {
         const newPixels = board.map(row => [...row]);
