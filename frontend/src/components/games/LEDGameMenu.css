@@ -1,0 +1,78 @@
+/* LED Game Menu Styles */
+
+.led-game-menu {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.menu-header {
+    margin-bottom: var(--spacing-lg);
+}
+
+.menu-header h1 {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-xs);
+    background: linear-gradient(135deg, var(--color-primary), #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.menu-subtitle {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.led-display-container {
+    margin: var(--spacing-lg) 0;
+}
+
+.current-game-info {
+    margin: var(--spacing-lg) 0;
+}
+
+.game-title {
+    font-size: var(--font-size-xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    min-height: 2em;
+}
+
+.game-index {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.menu-instructions {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+}
+
+/* Animations */
+.led-game-menu .led-matrix-container {
+    transition: transform 0.15s ease;
+}
+
+.led-game-menu .led-matrix-container:active {
+    transform: scale(0.98);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .led-game-menu {
+        padding: var(--spacing-md);
+    }
+
+    .menu-header h1 {
+        font-size: var(--font-size-xl);
+    }
+
+    .game-title {
+        font-size: var(--font-size-lg);
+    }
+}
