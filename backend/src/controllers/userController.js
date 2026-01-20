@@ -2,7 +2,32 @@ const User = require('../models/User');
 const Achievement = require('../models/Achievement');
 
 /**
- * Search users
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Search users
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by username or email
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: List of users
  */
 exports.search = async (req, res) => {
     try {
@@ -29,7 +54,16 @@ exports.search = async (req, res) => {
 };
 
 /**
- * Get current user stats
+ * @swagger
+ * /users/profile/stats:
+ *   get:
+ *     summary: Get current user stats
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User statistics (games played, wins, total time, etc.)
  */
 exports.getMyStats = async (req, res) => {
     try {
@@ -49,7 +83,29 @@ exports.getMyStats = async (req, res) => {
 };
 
 /**
- * Update current user profile
+ * @swagger
+ * /users/profile:
+ *   put:
+ *     summary: Update current user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               avatar_url:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ *       409:
+ *         description: Username already taken
  */
 exports.updateMyProfile = async (req, res) => {
     try {

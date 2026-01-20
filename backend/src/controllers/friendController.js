@@ -2,7 +2,33 @@ const Friend = require('../models/Friend');
 const db = require('../config/database');
 
 /**
- * Get friends list
+ * @swagger
+ * /friends:
+ *   get:
+ *     summary: Get friends list
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [accepted, pending]
+ *           default: accepted
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: List of friends with pagination
  */
 exports.getFriends = async (req, res) => {
     try {
@@ -28,7 +54,16 @@ exports.getFriends = async (req, res) => {
 };
 
 /**
- * Get pending friend requests
+ * @swagger
+ * /friends/pending:
+ *   get:
+ *     summary: Get pending friend requests
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of pending requests
  */
 exports.getPendingRequests = async (req, res) => {
     try {
@@ -53,7 +88,29 @@ exports.getPendingRequests = async (req, res) => {
 };
 
 /**
- * Send friend request
+ * @swagger
+ * /friends/request:
+ *   post:
+ *     summary: Send friend request
+ *     tags: [Friends]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - friend_id
+ *             properties:
+ *               friend_id:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Friend request sent
+ *       400:
+ *         description: Already friends or request exists
  */
 exports.sendRequest = async (req, res) => {
     try {

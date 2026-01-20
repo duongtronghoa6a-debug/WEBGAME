@@ -1,7 +1,27 @@
 const Message = require('../models/Message');
 
 /**
- * Get conversations list
+ * @swagger
+ * /messages/conversations:
+ *   get:
+ *     summary: Get conversations list
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: List of conversations
  */
 exports.getConversations = async (req, res) => {
     try {
@@ -26,7 +46,22 @@ exports.getConversations = async (req, res) => {
 };
 
 /**
- * Get messages with user
+ * @swagger
+ * /messages/{userId}:
+ *   get:
+ *     summary: Get messages with user
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of messages
  */
 exports.getMessages = async (req, res) => {
     try {
@@ -55,7 +90,32 @@ exports.getMessages = async (req, res) => {
 };
 
 /**
- * Send message
+ * @swagger
+ * /messages:
+ *   post:
+ *     summary: Send message
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - receiver_id
+ *               - content
+ *             properties:
+ *               receiver_id:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Message sent
+ *       400:
+ *         description: Validation error
  */
 exports.sendMessage = async (req, res) => {
     try {
@@ -97,7 +157,22 @@ exports.sendMessage = async (req, res) => {
 };
 
 /**
- * Mark message as read
+ * @swagger
+ * /messages/{messageId}/read:
+ *   put:
+ *     summary: Mark message as read
+ *     tags: [Messages]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: messageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Message marked as read
  */
 exports.markAsRead = async (req, res) => {
     try {

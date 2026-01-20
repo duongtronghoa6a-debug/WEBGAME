@@ -3,7 +3,18 @@ const User = require('../models/User');
 const Game = require('../models/Game');
 
 /**
- * Get dashboard statistics
+ * @swagger
+ * /admin/statistics:
+ *   get:
+ *     summary: Get dashboard statistics
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard stats (users, games, ratings, messages, activities)
+ *       403:
+ *         description: Admin access required
  */
 exports.getStatistics = async (req, res) => {
     try {
@@ -131,7 +142,31 @@ exports.getStatistics = async (req, res) => {
 };
 
 /**
- * Get all users (admin)
+ * @swagger
+ * /admin/users:
+ *   get:
+ *     summary: Get all users (admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: List of all users
  */
 exports.getUsers = async (req, res) => {
     try {

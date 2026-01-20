@@ -4,7 +4,14 @@ const { Rating, Comment } = require('../models/Rating');
 const Achievement = require('../models/Achievement');
 
 /**
- * Get all games
+ * @swagger
+ * /games:
+ *   get:
+ *     summary: Get all games
+ *     tags: [Games]
+ *     responses:
+ *       200:
+ *         description: List of all available games with stats
  */
 exports.getAll = async (req, res) => {
     try {
@@ -24,7 +31,22 @@ exports.getAll = async (req, res) => {
 };
 
 /**
- * Get game details
+ * @swagger
+ * /games/{id}:
+ *   get:
+ *     summary: Get game details
+ *     tags: [Games]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Game details with comments and ratings
+ *       404:
+ *         description: Game not found
  */
 exports.getById = async (req, res) => {
     try {

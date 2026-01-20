@@ -2,7 +2,30 @@ const GameSession = require('../models/GameSession');
 const Friend = require('../models/Friend');
 
 /**
- * Get global rankings for a game (or all games if no gameId)
+ * @swagger
+ * /rankings:
+ *   get:
+ *     summary: Get global rankings
+ *     tags: [Rankings]
+ *     parameters:
+ *       - in: query
+ *         name: game_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by game ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Global rankings list
  */
 exports.getGlobalRanking = async (req, res) => {
     try {
@@ -31,7 +54,22 @@ exports.getGlobalRanking = async (req, res) => {
 };
 
 /**
- * Get friends ranking for a game
+ * @swagger
+ * /rankings/{gameId}/friends:
+ *   get:
+ *     summary: Get friends ranking for a game
+ *     tags: [Rankings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Friends rankings
  */
 exports.getFriendsRanking = async (req, res) => {
     try {
