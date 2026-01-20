@@ -196,8 +196,19 @@ exports.seed = async function (knex) {
             }),
             enabled: true,
             instructions: '☄️ **ASTEROIDS**\n\n**Luật chơi:**\n- Bắn phá thiên thạch\n- Tránh va chạm\n- Ghi điểm cao nhất\n\n**Điều khiển:**\n- ← →: Xoay\n- ↑: Tăng tốc\n- ENTER: Bắn'
+        },
+        {
+            id: 18,
+            name: '2048',
+            type: 'puzzle2048',
+            config: JSON.stringify({
+                boardSize: 4,
+                winTarget: 2048
+            }),
+            enabled: true,
+            instructions: '🔢 **2048**\n\n**Luật chơi:**\n- Di chuyển ô bằng phím mũi tên\n- Ô cùng số sẽ gộp lại\n- Đạt ô 2048 để thắng!\n\n**Điều khiển:**\n- ← → ↑ ↓: Di chuyển\n- ENTER: Di lên (thay thế ↑)'
         }
     ]);
 
-    console.log('✅ Seeded 17 games');
+    console.log('✅ Seeded 18 games');
 };

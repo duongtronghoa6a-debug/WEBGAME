@@ -4,6 +4,8 @@ import SnakeGame from './SnakeGame';
 import Match3Game from './Match3Game';
 import MemoryGame from './MemoryGame';
 import DrawingBoard from './DrawingBoard';
+import Game2048 from './Game2048';
+import Minesweeper from './Minesweeper';
 
 // Map gameId to game component
 const gameComponents = {
@@ -14,7 +16,9 @@ const gameComponents = {
     5: Match3Game,    // Ghép Hàng 3
     6: MemoryGame,    // Cờ Trí Nhớ
     7: DrawingBoard,  // Bảng Vẽ
-    // More games will be added
+    // Bonus games
+    11: Minesweeper,  // Dò Mìn (có sẵn trong seed)
+    18: Game2048,     // 2048 Puzzle (mới thêm)
 };
 
 // Placeholder component for games not yet implemented

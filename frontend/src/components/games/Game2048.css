@@ -1,0 +1,240 @@
+.game-2048-page {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.game-header h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.stat-box {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+}
+
+.stat-box.best {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
+    border-color: #f59e0b;
+}
+
+.stat-box svg {
+    color: var(--color-primary);
+}
+
+.stat-box.best svg {
+    color: #f59e0b;
+}
+
+.stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    display: block;
+}
+
+.stat-value {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.game-board-2048 {
+    position: relative;
+    background: #bbada0;
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.board-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.board-row:last-child {
+    margin-bottom: 0;
+}
+
+.tile {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    font-size: 32px;
+    font-weight: 700;
+    transition: all 0.15s ease;
+}
+
+.tile-0 {
+    background: rgba(238, 228, 218, 0.35);
+}
+
+.tile-1 {
+    /* 2 */
+    background: #eee4da;
+    color: #776e65;
+}
+
+.tile-2 {
+    /* 4 */
+    background: #ede0c8;
+    color: #776e65;
+}
+
+.tile-3 {
+    /* 8 */
+    background: #f2b179;
+    color: #f9f6f2;
+}
+
+.tile-4 {
+    /* 16 */
+    background: #f59563;
+    color: #f9f6f2;
+}
+
+.tile-5 {
+    /* 32 */
+    background: #f67c5f;
+    color: #f9f6f2;
+}
+
+.tile-6 {
+    /* 64 */
+    background: #f65e3b;
+    color: #f9f6f2;
+}
+
+.tile-7 {
+    /* 128 */
+    background: #edcf72;
+    color: #f9f6f2;
+    font-size: 28px;
+}
+
+.tile-8 {
+    /* 256 */
+    background: #edcc61;
+    color: #f9f6f2;
+    font-size: 28px;
+}
+
+.tile-9 {
+    /* 512 */
+    background: #edc850;
+    color: #f9f6f2;
+    font-size: 28px;
+}
+
+.tile-10 {
+    /* 1024 */
+    background: #edc53f;
+    color: #f9f6f2;
+    font-size: 24px;
+}
+
+.tile-11 {
+    /* 2048 */
+    background: linear-gradient(135deg, #edc22e, #f2b179);
+    color: #f9f6f2;
+    font-size: 24px;
+    box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.4);
+}
+
+.game-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(4px);
+}
+
+.game-overlay h2 {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-sm);
+    color: white;
+}
+
+.game-overlay p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: var(--spacing-lg);
+}
+
+.game-instructions {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.game-instructions h4 {
+    margin-bottom: var(--spacing-sm);
+}
+
+.game-instructions p {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .tile {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+
+    .tile-7,
+    .tile-8,
+    .tile-9 {
+        font-size: 20px;
+    }
+
+    .tile-10,
+    .tile-11 {
+        font-size: 18px;
+    }
+
+    .board-row {
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .game-board-2048 {
+        padding: 8px;
+    }
+}
