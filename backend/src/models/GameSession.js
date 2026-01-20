@@ -179,19 +179,42 @@ class GameSession {
     static async getPersonalHistory(userId, gameId, { page = 1, limit = 10 }) {
         const offset = (page - 1) * limit;
 
-        const sessions = await db(this.tableName)
-            .where({ user_id: userId, game_id: gameId, completed: true })
-            .select('id', 'score', 'time_spent', 'created_at')
-            .orderBy('score', 'desc')
+        let query = db(this.tableName)
+            .where({ user_id: userId, completed: true });
+
+        // Only filter by game_id if a specific game is selected (not 0)
+        if (gameId && gameId !== 0) {
+            query = query.where({ game_id: gameId });
+        }
+
+        const sessions = await query.clone()
+            .join('games', 'games.id', '=', `${this.tableName}.game_id`)
+            .select(
+                `${this.tableName}.id`,
+                `${this.tableName}.score`,
+                `${this.tableName}.time_spent`,
+                `${this.tableName}.created_at`,
+                'games.name as game_name'
+            )
+            .orderBy(`${this.tableName}.score`, 'desc')
             .limit(limit)
             .offset(offset);
 
-        const [{ count }] = await db(this.tableName)
-            .where({ user_id: userId, game_id: gameId, completed: true })
-            .count();
+        const [{ count }] = await query.clone().count();
+
+        // Format for rankings display
+        const formattedData = sessions.map((s, index) => ({
+            rank: offset + index + 1,
+            username: 'Bạn',
+            total_score: s.score,
+            games_played: 1,
+            avg_score: s.score,
+            game_name: s.game_name,
+            created_at: s.created_at
+        }));
 
         return {
-            data: sessions,
+            data: formattedData,
             pagination: {
                 page,
                 limit,
