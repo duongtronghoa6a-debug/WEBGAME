@@ -14,6 +14,7 @@ const Admin = () => {
     const [stats, setStats] = useState(null);
     const [users, setUsers] = useState([]);
     const [games, setGames] = useState([]);
+    const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingGame, setEditingGame] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -33,9 +34,9 @@ const Admin = () => {
             // Map API response to frontend format
             setStats({
                 totalUsers: data.users?.total || 0,
-                totalGames: 10, // Fixed: 10 games in seed
+                totalGames: 0, // Will be set from games.length after fetchGames
                 totalSessions: data.games?.total_plays || 0,
-                activeToday: data.games?.plays_today || 0,
+                activeToday: data.users?.new_today || 0, // Use new_today instead of plays_today for "online"
                 newUsersThisWeek: data.users?.new_this_week || 0,
                 totalMessages: 0, // Can add later if needed
                 avgRating: data.ratings?.average || 0,
@@ -47,11 +48,12 @@ const Admin = () => {
             // Fallback - but should not happen if API works
             setStats({
                 totalUsers: 0,
-                totalGames: 10,
+                totalGames: 0,
                 totalSessions: 0,
                 activeToday: 0,
                 newUsersThisWeek: 0,
-                totalMessages: 0
+                totalMessages: 0,
+                popularGames: []
             });
         } finally {
             setLoading(false);
@@ -61,7 +63,13 @@ const Admin = () => {
     const fetchUsers = async () => {
         try {
             const res = await api.get('/admin/users');
-            setUsers(res.data.data || []);
+            // Ensure status and role have defaults
+            const usersData = (res.data.data || []).map(u => ({
+                ...u,
+                status: u.status || 'active',
+                role: u.role || (u.is_admin ? 'admin' : 'player')
+            }));
+            setUsers(usersData);
         } catch (error) {
             console.error('Error fetching users:', error);
             setUsers([]); // No fake data
@@ -71,7 +79,15 @@ const Admin = () => {
     const fetchGames = async () => {
         try {
             const res = await api.get('/admin/games');
-            setGames(res.data.data || []);
+            // Map enabled to is_active and add play_count from stats
+            const gamesData = (res.data.data || []).map(g => ({
+                ...g,
+                is_active: g.enabled !== false,
+                play_count: g.stats?.total_plays || g.play_count || 0
+            }));
+            setGames(gamesData);
+            // Update totalGames in stats
+            setStats(prev => prev ? { ...prev, totalGames: gamesData.length } : prev);
         } catch (error) {
             console.error('Error fetching games:', error);
             setGames([]); // No fake data
@@ -244,7 +260,7 @@ const Admin = () => {
                         <div className="stat-card">
                             <Star size={32} />
                             <div className="stat-content">
-                                <span className="stat-value">{stats?.totalGames || 0}</span>
+                                <span className="stat-value">{games.length}</span>
                                 <span className="stat-label">Tổng games</span>
                             </div>
                         </div>
@@ -255,19 +271,23 @@ const Admin = () => {
                         <div className="chart-card">
                             <h3>🎮 Top Games được chơi nhiều nhất</h3>
                             <div className="top-games-list">
-                                {games.slice(0, 5).map((game, idx) => (
-                                    <div key={game.id} className="top-game-item">
-                                        <span className={`rank rank-${idx + 1}`}>{idx + 1}</span>
-                                        <span className="game-name">{game.name}</span>
-                                        <div className="game-bar">
-                                            <div
-                                                className="game-bar-fill"
-                                                style={{ width: `${Math.min(100, (game.play_count / 500) * 100)}%` }}
-                                            />
+                                {(stats?.popularGames?.length > 0 ? stats.popularGames : games.slice(0, 5)).map((game, idx) => {
+                                    const playCount = game.plays || game.play_count || game.stats?.total_plays || 0;
+                                    const maxPlays = Math.max(...(stats?.popularGames || games).map(g => g.plays || g.play_count || g.stats?.total_plays || 1));
+                                    return (
+                                        <div key={game.id} className="top-game-item">
+                                            <span className={`rank rank-${idx + 1}`}>{idx + 1}</span>
+                                            <span className="game-name">{game.name}</span>
+                                            <div className="game-bar">
+                                                <div
+                                                    className="game-bar-fill"
+                                                    style={{ width: `${Math.min(100, (playCount / maxPlays) * 100)}%` }}
+                                                />
+                                            </div>
+                                            <span className="play-count">{playCount} lượt</span>
                                         </div>
-                                        <span className="play-count">{game.play_count}</span>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -275,7 +295,7 @@ const Admin = () => {
                             <h3>📈 Thống kê người dùng</h3>
                             <div className="user-stats-grid">
                                 <div className="user-stat-box">
-                                    <span className="stat-number">{users.filter(u => u.status === 'active').length}</span>
+                                    <span className="stat-number">{users.filter(u => (u.status || 'active') === 'active').length}</span>
                                     <span className="stat-name">Active</span>
                                 </div>
                                 <div className="user-stat-box banned">
@@ -283,11 +303,11 @@ const Admin = () => {
                                     <span className="stat-name">Banned</span>
                                 </div>
                                 <div className="user-stat-box admin">
-                                    <span className="stat-number">{users.filter(u => u.role === 'admin').length}</span>
+                                    <span className="stat-number">{users.filter(u => u.is_admin || u.role === 'admin').length}</span>
                                     <span className="stat-name">Admins</span>
                                 </div>
                                 <div className="user-stat-box">
-                                    <span className="stat-number">{users.filter(u => u.role === 'player').length}</span>
+                                    <span className="stat-number">{users.filter(u => !u.is_admin && u.role !== 'admin').length}</span>
                                     <span className="stat-name">Players</span>
                                 </div>
                             </div>

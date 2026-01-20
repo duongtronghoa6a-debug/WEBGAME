@@ -137,6 +137,14 @@ exports.login = async (req, res) => {
             });
         }
 
+        // Check if user is banned
+        if (user.status === 'banned') {
+            return res.status(403).json({
+                success: false,
+                error: { code: 'USER_BANNED', message: 'Tài khoản đã bị khóa' }
+            });
+        }
+
         // Generate token
         const token = jwt.sign(
             { userId: user.id },

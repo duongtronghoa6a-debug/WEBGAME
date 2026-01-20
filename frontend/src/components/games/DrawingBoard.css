@@ -66,6 +66,35 @@
     flex-wrap: wrap;
 }
 
+/* Inline horizontal color palette for toolbar */
+.drawing-toolbar {
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.color-palette-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.color-palette-inline .color-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.color-options-horizontal {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.color-palette-inline .hint-text {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
 .color-btn {
     width: 28px;
     height: 28px;

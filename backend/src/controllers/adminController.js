@@ -109,9 +109,23 @@ exports.getUsers = async (req, res) => {
 exports.updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { is_admin } = req.body;
+        const { is_admin, status, role } = req.body;
 
-        const user = await User.update(id, { is_admin });
+        // Build update data
+        const updateData = {};
+        if (is_admin !== undefined) updateData.is_admin = is_admin;
+        if (status !== undefined) updateData.status = status;
+        if (role !== undefined) updateData.role = role;
+
+        // Prevent empty update
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: { code: 'VALIDATION_ERROR', message: 'No valid update fields provided' }
+            });
+        }
+
+        const user = await User.update(id, updateData);
 
         if (!user) {
             return res.status(404).json({
@@ -126,7 +140,9 @@ exports.updateUser = async (req, res) => {
                 id: user.id,
                 email: user.email,
                 username: user.username,
-                is_admin: user.is_admin
+                is_admin: user.is_admin,
+                status: user.status,
+                role: user.role
             },
             message: 'User updated successfully'
         });
@@ -195,11 +211,21 @@ exports.getGames = async (req, res) => {
 exports.updateGame = async (req, res) => {
     try {
         const { id } = req.params;
-        const { enabled, config } = req.body;
+        const { enabled, is_active, config } = req.body;
 
         const updateData = {};
+        // Accept both 'enabled' and 'is_active' (frontend sends is_active)
         if (enabled !== undefined) updateData.enabled = enabled;
+        else if (is_active !== undefined) updateData.enabled = is_active;
         if (config) updateData.config = config;
+
+        // Prevent empty update
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: { code: 'VALIDATION_ERROR', message: 'No valid update fields provided' }
+            });
+        }
 
         const game = await Game.update(parseInt(id), updateData);
 

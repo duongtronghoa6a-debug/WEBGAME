@@ -280,9 +280,7 @@ const TetrisGame = () => {
                     break;
                 case ' ':
                     e.preventDefault();
-                    if (!isPlaying) {
-                        setIsPlaying(true);
-                    } else {
+                    if (isPlaying) {
                         hardDrop();
                     }
                     break;

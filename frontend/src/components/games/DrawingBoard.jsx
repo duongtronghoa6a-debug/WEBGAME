@@ -211,36 +211,30 @@ const DrawingBoard = () => {
                 </div>
             </div>
 
-            <div className="game-controls">
+            <div className="game-controls drawing-toolbar">
                 <button className="control-btn" onClick={clearCanvas}>
                     <Trash2 size={18} />
                     Xóa tất cả
                 </button>
-                <button
-                    className={`control-btn ${isDrawing ? 'active' : ''}`}
-                    onClick={() => setIsDrawing(!isDrawing)}
-                >
-                    ✏️ {isDrawing ? 'Đang vẽ' : 'Bật vẽ'}
-                </button>
-            </div>
 
-            {/* Color palette */}
-            <div className="color-palette">
-                <span>Màu: <strong>{COLOR_NAMES[currentColor]}</strong></span>
-                <div className="color-options">
-                    {COLORS.map((color, index) => (
-                        <button
-                            key={index}
-                            className={`color-btn ${index === currentColor ? 'selected' : ''} ${index === 0 ? 'eraser-btn' : ''}`}
-                            style={{ backgroundColor: color || '#2d2d44' }}
-                            onClick={() => setCurrentColor(index)}
-                            title={COLOR_NAMES[index]}
-                        >
-                            {index === 0 && <Eraser size={14} />}
-                        </button>
-                    ))}
+                {/* Color palette - horizontal */}
+                <div className="color-palette-inline">
+                    <span className="color-label">Màu: <strong>{COLOR_NAMES[currentColor]}</strong></span>
+                    <div className="color-options-horizontal">
+                        {COLORS.map((color, index) => (
+                            <button
+                                key={index}
+                                className={`color-btn ${index === currentColor ? 'selected' : ''} ${index === 0 ? 'eraser-btn' : ''}`}
+                                style={{ backgroundColor: color || '#2d2d44' }}
+                                onClick={() => setCurrentColor(index)}
+                                title={COLOR_NAMES[index]}
+                            >
+                                {index === 0 && <Eraser size={14} />}
+                            </button>
+                        ))}
+                    </div>
+                    <small className="hint-text">(Nhấn H để đổi màu)</small>
                 </div>
-                <small>(Nhấn H để đổi màu)</small>
             </div>
 
             <div className="game-status">

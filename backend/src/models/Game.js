@@ -94,10 +94,13 @@ class Game {
                     .where({ game_id: game.id })
                     .select(db.raw('COALESCE(AVG(stars), 0) as avg_rating'));
 
+                const playCount = parseInt(stats.total_plays) || 0;
                 return {
                     ...game,
+                    play_count: playCount,  // Add at top level for frontend
+                    is_active: game.enabled, // Map enabled to is_active for frontend
                     stats: {
-                        total_plays: parseInt(stats.total_plays) || 0,
+                        total_plays: playCount,
                         avg_rating: parseFloat(ratingStats.avg_rating).toFixed(1)
                     }
                 };

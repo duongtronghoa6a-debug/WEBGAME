@@ -16,7 +16,9 @@ exports.seed = async function (knex) {
             username: 'admin',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
-            is_admin: true
+            is_admin: true,
+            status: 'active',
+            role: 'admin'
         },
         {
             id: 'b2222222-2222-2222-2222-222222222222',
@@ -24,7 +26,9 @@ exports.seed = async function (knex) {
             username: 'CaroMaster',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player1',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         },
         {
             id: 'c3333333-3333-3333-3333-333333333333',
@@ -32,7 +36,9 @@ exports.seed = async function (knex) {
             username: 'GameLover',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player2',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         },
         {
             id: 'd4444444-4444-4444-4444-444444444444',
@@ -40,7 +46,9 @@ exports.seed = async function (knex) {
             username: 'NewGamer',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player3',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         },
         {
             id: 'e5555555-5555-5555-5555-555555555555',
@@ -48,7 +56,9 @@ exports.seed = async function (knex) {
             username: 'CasualPlayer',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player4',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         },
         {
             id: 'f6666666-6666-6666-6666-666666666666',
@@ -56,7 +66,9 @@ exports.seed = async function (knex) {
             username: 'ProGamer',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player5',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         },
         {
             id: 'g7777777-7777-7777-7777-777777777777',
@@ -64,7 +76,9 @@ exports.seed = async function (knex) {
             username: 'TetrisPro',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player6',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         },
         {
             id: 'h8888888-8888-8888-8888-888888888888',
@@ -72,7 +86,9 @@ exports.seed = async function (knex) {
             username: 'SnakeKing',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player7',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         },
         {
             id: 'i9999999-9999-9999-9999-999999999999',
@@ -80,7 +96,9 @@ exports.seed = async function (knex) {
             username: 'MemoryMaster',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player8',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         },
         {
             id: 'j0000000-0000-0000-0000-000000000000',
@@ -88,7 +106,9 @@ exports.seed = async function (knex) {
             username: 'Match3King',
             password_hash: password,
             avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player9',
-            is_admin: false
+            is_admin: false,
+            status: 'active',
+            role: 'player'
         }
     ]);
 

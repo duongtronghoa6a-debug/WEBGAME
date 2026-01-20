@@ -93,11 +93,7 @@ const Login = () => {
                     <p>Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link></p>
                 </div>
 
-                <div className="demo-accounts">
-                    <p>Tài khoản demo:</p>
-                    <code>admin@boardgame.com / password123</code>
-                    <code>player1@example.com / password123</code>
-                </div>
+
             </div>
         </div>
     );

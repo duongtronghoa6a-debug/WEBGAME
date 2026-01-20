@@ -133,7 +133,7 @@ class User {
 
         // Build data query
         let query = db(this.tableName)
-            .select('id', 'email', 'username', 'avatar_url', 'is_admin', 'created_at', 'updated_at');
+            .select('id', 'email', 'username', 'avatar_url', 'is_admin', 'status', 'role', 'created_at', 'updated_at');
         if (search) {
             query = query.where(function () {
                 this.where('username', 'ilike', `%${search}%`)
