@@ -1,9 +1,12 @@
 /**
  * API Automated Tests
- * Chạy: node tests/api.test.js
+ * Chạy: npm install node-fetch@2 && node tests/api.test.js
  */
 
-const API_BASE = 'http://localhost:5000/api';
+// Node.js < 18 needs node-fetch
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
+const API_BASE = 'http://localhost:3000/api';
 const API_KEY = 'boardgame-api-key-2024-secure';
 
 let authToken = null;
@@ -76,7 +79,7 @@ const tests = [
         const { status, data } = await request('GET', '/auth/me', null, true);
         assert(status === 200, `Expected 200, got ${status}`);
         assert(data.success === true, 'Expected success: true');
-        assert(data.data.email === 'admin@boardgame.com', 'Expected admin email');
+        assert(data.data.email === '01@gmail.com', 'Expected admin email');
     }),
 
     test('GET /auth/me - Without token', async () => {

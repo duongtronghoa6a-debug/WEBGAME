@@ -157,7 +157,8 @@ const DrawingBoard = () => {
         } else {
             setStartPos(pos);
             // Save canvas state for shape preview using ImageData (sync)
-            const imageData = context.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+            // Use canvas.width/height (actual pixel dimensions) not offsetWidth/offsetHeight
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
             setCanvasSnapshot(imageData);
         }
 

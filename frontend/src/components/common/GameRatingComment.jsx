@@ -59,8 +59,11 @@ const GameRatingComment = ({ gameId }) => {
         try {
             setRating(stars);
             setUserRating(stars);
-            await api.post(`/games/${gameId}/ratings`, { stars });
-            fetchRating();
+            const res = await api.post(`/games/${gameId}/ratings`, { stars });
+            if (res.data.success) {
+                // Fetch updated stats after successful rating
+                await fetchRating();
+            }
         } catch (error) {
             console.error('Error submitting rating:', error);
         }
