@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, Eye, EyeOff, UserPlus } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, UserPlus, CheckCircle, AlertCircle } from 'lucide-react';
 import './Auth.css';
 
 const Register = () => {
@@ -13,19 +13,155 @@ const Register = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Validation states
+    const [validations, setValidations] = useState({
+        email: { valid: false, message: '' },
+        username: { valid: false, message: '' },
+        password: { valid: false, message: '', strength: 0 },
+        confirmPassword: { valid: false, message: '' }
+    });
+
     const { register } = useAuth();
     const navigate = useNavigate();
 
+    // Email validation
+    const validateEmail = (value) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value) {
+            return { valid: false, message: '' };
+        }
+        if (!emailRegex.test(value)) {
+            return { valid: false, message: 'Email không hợp lệ' };
+        }
+        return { valid: true, message: 'Email hợp lệ' };
+    };
+
+    // Username validation
+    const validateUsername = (value) => {
+        if (!value) {
+            return { valid: false, message: '' };
+        }
+        if (value.length < 3) {
+            return { valid: false, message: 'Tối thiểu 3 ký tự' };
+        }
+        if (value.length > 20) {
+            return { valid: false, message: 'Tối đa 20 ký tự' };
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+            return { valid: false, message: 'Chỉ chứa chữ, số và _' };
+        }
+        return { valid: true, message: 'Username hợp lệ' };
+    };
+
+    // Password validation with strength
+    const validatePassword = (value) => {
+        if (!value) {
+            return { valid: false, message: '', strength: 0 };
+        }
+
+        let strength = 0;
+        const checks = {
+            minLength: value.length >= 6,
+            hasLower: /[a-z]/.test(value),
+            hasUpper: /[A-Z]/.test(value),
+            hasNumber: /[0-9]/.test(value),
+            hasSpecial: /[!@#$%^&*]/.test(value)
+        };
+
+        if (checks.minLength) strength += 1;
+        if (checks.hasLower) strength += 1;
+        if (checks.hasUpper) strength += 1;
+        if (checks.hasNumber) strength += 1;
+        if (checks.hasSpecial) strength += 1;
+
+        if (value.length < 6) {
+            return { valid: false, message: 'Tối thiểu 6 ký tự', strength };
+        }
+        if (!checks.hasLower || !checks.hasUpper) {
+            return { valid: false, message: 'Cần có chữ hoa và thường', strength };
+        }
+        if (!checks.hasNumber) {
+            return { valid: false, message: 'Cần có ít nhất 1 số', strength };
+        }
+
+        return { valid: true, message: 'Mật khẩu mạnh', strength };
+    };
+
+    // Confirm password validation
+    const validateConfirmPassword = (value, originalPassword) => {
+        if (!value) {
+            return { valid: false, message: '' };
+        }
+        if (value !== originalPassword) {
+            return { valid: false, message: 'Mật khẩu không khớp' };
+        }
+        return { valid: true, message: 'Mật khẩu khớp' };
+    };
+
+    // Handle input changes with validation
+    const handleEmailChange = (e) => {
+        const value = e.target.value;
+        setEmail(value);
+        setValidations(prev => ({ ...prev, email: validateEmail(value) }));
+    };
+
+    const handleUsernameChange = (e) => {
+        const value = e.target.value;
+        setUsername(value);
+        setValidations(prev => ({ ...prev, username: validateUsername(value) }));
+    };
+
+    const handlePasswordChange = (e) => {
+        const value = e.target.value;
+        setPassword(value);
+        setValidations(prev => ({
+            ...prev,
+            password: validatePassword(value),
+            confirmPassword: confirmPassword ? validateConfirmPassword(confirmPassword, value) : prev.confirmPassword
+        }));
+    };
+
+    const handleConfirmPasswordChange = (e) => {
+        const value = e.target.value;
+        setConfirmPassword(value);
+        setValidations(prev => ({ ...prev, confirmPassword: validateConfirmPassword(value, password) }));
+    };
+
+    // Get password strength label and color
+    const getPasswordStrength = () => {
+        const { strength } = validations.password;
+        if (strength <= 1) return { label: 'Yếu', color: '#ef4444' };
+        if (strength <= 2) return { label: 'Trung bình', color: '#f59e0b' };
+        if (strength <= 3) return { label: 'Khá', color: '#22c55e' };
+        return { label: 'Mạnh', color: '#10b981' };
+    };
+
     const validateForm = () => {
-        if (username.length < 3) {
-            setError('Username phải có ít nhất 3 ký tự');
+        const emailCheck = validateEmail(email);
+        const usernameCheck = validateUsername(username);
+        const passwordCheck = validatePassword(password);
+        const confirmCheck = validateConfirmPassword(confirmPassword, password);
+
+        setValidations({
+            email: emailCheck,
+            username: usernameCheck,
+            password: passwordCheck,
+            confirmPassword: confirmCheck
+        });
+
+        if (!emailCheck.valid) {
+            setError(emailCheck.message || 'Vui lòng nhập email hợp lệ');
             return false;
         }
-        if (password.length < 6) {
-            setError('Mật khẩu phải có ít nhất 6 ký tự');
+        if (!usernameCheck.valid) {
+            setError(usernameCheck.message || 'Vui lòng nhập username hợp lệ');
             return false;
         }
-        if (password !== confirmPassword) {
+        if (!passwordCheck.valid) {
+            setError(passwordCheck.message || 'Vui lòng nhập mật khẩu hợp lệ');
+            return false;
+        }
+        if (!confirmCheck.valid) {
             setError('Mật khẩu xác nhận không khớp');
             return false;
         }
@@ -63,45 +199,60 @@ const Register = () => {
 
                     <div className="form-group">
                         <label>Email</label>
-                        <div className="input-wrapper">
+                        <div className={`input-wrapper ${validations.email.message ? (validations.email.valid ? 'valid' : 'invalid') : ''}`}>
                             <Mail size={18} className="input-icon" />
                             <input
                                 type="email"
                                 className="input"
                                 placeholder="your@email.com"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={handleEmailChange}
                                 required
                             />
+                            {validations.email.valid && <CheckCircle size={18} className="validation-icon valid" />}
+                            {validations.email.message && !validations.email.valid && <AlertCircle size={18} className="validation-icon invalid" />}
                         </div>
+                        {validations.email.message && (
+                            <span className={`validation-message ${validations.email.valid ? 'valid' : 'invalid'}`}>
+                                {validations.email.message}
+                            </span>
+                        )}
                     </div>
 
                     <div className="form-group">
                         <label>Username</label>
-                        <div className="input-wrapper">
+                        <div className={`input-wrapper ${validations.username.message ? (validations.username.valid ? 'valid' : 'invalid') : ''}`}>
                             <User size={18} className="input-icon" />
                             <input
                                 type="text"
                                 className="input"
                                 placeholder="username"
                                 value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                onChange={handleUsernameChange}
                                 minLength={3}
+                                maxLength={20}
                                 required
                             />
+                            {validations.username.valid && <CheckCircle size={18} className="validation-icon valid" />}
+                            {validations.username.message && !validations.username.valid && <AlertCircle size={18} className="validation-icon invalid" />}
                         </div>
+                        {validations.username.message && (
+                            <span className={`validation-message ${validations.username.valid ? 'valid' : 'invalid'}`}>
+                                {validations.username.message}
+                            </span>
+                        )}
                     </div>
 
                     <div className="form-group">
                         <label>Mật khẩu</label>
-                        <div className="input-wrapper">
+                        <div className={`input-wrapper ${validations.password.message ? (validations.password.valid ? 'valid' : 'invalid') : ''}`}>
                             <Lock size={18} className="input-icon" />
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 className="input"
-                                placeholder="Ít nhất 6 ký tự"
+                                placeholder="Chứa chữ hoa, thường và số"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={handlePasswordChange}
                                 minLength={6}
                                 required
                             />
@@ -113,21 +264,49 @@ const Register = () => {
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
+                        {password && (
+                            <div className="password-strength">
+                                <div className="strength-bar">
+                                    <div
+                                        className="strength-fill"
+                                        style={{
+                                            width: `${(validations.password.strength / 5) * 100}%`,
+                                            backgroundColor: getPasswordStrength().color
+                                        }}
+                                    />
+                                </div>
+                                <span style={{ color: getPasswordStrength().color }}>
+                                    Độ mạnh: {getPasswordStrength().label}
+                                </span>
+                            </div>
+                        )}
+                        {validations.password.message && (
+                            <span className={`validation-message ${validations.password.valid ? 'valid' : 'invalid'}`}>
+                                {validations.password.message}
+                            </span>
+                        )}
                     </div>
 
                     <div className="form-group">
                         <label>Xác nhận mật khẩu</label>
-                        <div className="input-wrapper">
+                        <div className={`input-wrapper ${validations.confirmPassword.message ? (validations.confirmPassword.valid ? 'valid' : 'invalid') : ''}`}>
                             <Lock size={18} className="input-icon" />
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 className="input"
                                 placeholder="Nhập lại mật khẩu"
                                 value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onChange={handleConfirmPasswordChange}
                                 required
                             />
+                            {validations.confirmPassword.valid && <CheckCircle size={18} className="validation-icon valid" />}
+                            {validations.confirmPassword.message && !validations.confirmPassword.valid && <AlertCircle size={18} className="validation-icon invalid" />}
                         </div>
+                        {validations.confirmPassword.message && (
+                            <span className={`validation-message ${validations.confirmPassword.valid ? 'valid' : 'invalid'}`}>
+                                {validations.confirmPassword.message}
+                            </span>
+                        )}
                     </div>
 
                     <button type="submit" className="btn btn-primary btn-lg auth-submit" disabled={loading}>

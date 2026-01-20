@@ -121,3 +121,76 @@
     font-size: var(--font-size-xs);
     margin-bottom: var(--spacing-xs);
 }
+
+/* Validation Styles */
+.input-wrapper.valid {
+    border-color: var(--color-success);
+}
+
+.input-wrapper.invalid .input {
+    border-color: var(--color-error);
+}
+
+.validation-icon {
+    position: absolute;
+    right: var(--spacing-md);
+    pointer-events: none;
+}
+
+.validation-icon.valid {
+    color: var(--color-success);
+}
+
+.validation-icon.invalid {
+    color: var(--color-error);
+}
+
+.input-wrapper .input-toggle+.validation-icon,
+.input-wrapper .validation-icon {
+    right: var(--spacing-md);
+}
+
+.input-wrapper:has(.input-toggle) .validation-icon {
+    right: calc(var(--spacing-md) * 2 + 24px);
+}
+
+.validation-message {
+    font-size: var(--font-size-xs);
+    margin-top: 2px;
+}
+
+.validation-message.valid {
+    color: var(--color-success);
+}
+
+.validation-message.invalid {
+    color: var(--color-error);
+}
+
+/* Password Strength */
+.password-strength {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.strength-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.strength-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.password-strength span {
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    white-space: nowrap;
+}
