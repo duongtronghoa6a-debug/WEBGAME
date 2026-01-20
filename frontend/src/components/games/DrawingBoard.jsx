@@ -28,6 +28,7 @@ const DrawingBoard = () => {
     const [history, setHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [showInstructions, setShowInstructions] = useState(true);
+    const [canvasSnapshot, setCanvasSnapshot] = useState(null); // For shape preview
 
     const TOOLS = ['pencil', 'eraser', 'line', 'rectangle', 'circle'];
 
@@ -144,16 +145,19 @@ const DrawingBoard = () => {
     const startDrawing = (e) => {
         e.preventDefault();
         const pos = getPosition(e);
+        const canvas = canvasRef.current;
+        const context = contextRef.current;
 
         if (tool === 'pencil' || tool === 'eraser') {
-            contextRef.current.beginPath();
-            contextRef.current.moveTo(pos.x, pos.y);
-            contextRef.current.strokeStyle = tool === 'eraser' ? '#ffffff' : color;
-            contextRef.current.lineWidth = brushSize;
+            context.beginPath();
+            context.moveTo(pos.x, pos.y);
+            context.strokeStyle = tool === 'eraser' ? '#ffffff' : color;
+            context.lineWidth = brushSize;
         } else {
             setStartPos(pos);
-            // Save canvas state for shape preview
-            saveToHistory();
+            // Save canvas state for shape preview using ImageData (sync)
+            const imageData = context.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+            setCanvasSnapshot(imageData);
         }
 
         setIsDrawing(true);
@@ -165,15 +169,14 @@ const DrawingBoard = () => {
         e.preventDefault();
 
         const pos = getPosition(e);
+        const context = contextRef.current;
 
         if (tool === 'pencil' || tool === 'eraser') {
-            contextRef.current.lineTo(pos.x, pos.y);
-            contextRef.current.stroke();
-        } else if (startPos) {
-            // Preview shape
-            if (historyIndex >= 0 && history[historyIndex]) {
-                loadFromHistory(history[historyIndex]);
-            }
+            context.lineTo(pos.x, pos.y);
+            context.stroke();
+        } else if (startPos && canvasSnapshot) {
+            // Restore canvas from snapshot (sync) then draw preview shape
+            context.putImageData(canvasSnapshot, 0, 0);
             drawShape(startPos, pos);
         }
     };
