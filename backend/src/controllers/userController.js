@@ -29,6 +29,70 @@ exports.search = async (req, res) => {
 };
 
 /**
+ * Get current user stats
+ */
+exports.getMyStats = async (req, res) => {
+    try {
+        const stats = await User.getStats(req.user.id);
+
+        res.json({
+            success: true,
+            data: stats
+        });
+    } catch (error) {
+        console.error('Get my stats error:', error);
+        res.status(500).json({
+            success: false,
+            error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+        });
+    }
+};
+
+/**
+ * Update current user profile
+ */
+exports.updateMyProfile = async (req, res) => {
+    try {
+        const { username, avatar_url } = req.body;
+        const updateData = {};
+
+        if (username) {
+            // Check if username is taken
+            const existing = await User.findByUsername(username);
+            if (existing && existing.id !== req.user.id) {
+                return res.status(409).json({
+                    success: false,
+                    error: { code: 'USERNAME_EXISTS', message: 'Username already taken' }
+                });
+            }
+            updateData.username = username;
+        }
+
+        if (avatar_url !== undefined) {
+            updateData.avatar_url = avatar_url;
+        }
+
+        const user = await User.update(req.user.id, updateData);
+
+        res.json({
+            success: true,
+            data: {
+                id: user.id,
+                username: user.username,
+                avatar_url: user.avatar_url
+            },
+            message: 'Profile updated successfully'
+        });
+    } catch (error) {
+        console.error('Update my profile error:', error);
+        res.status(500).json({
+            success: false,
+            error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+        });
+    }
+};
+
+/**
  * Get user profile
  */
 exports.getProfile = async (req, res) => {
