@@ -19,9 +19,11 @@ exports.seed = async function (knex) {
 
     // Game IDs: 1,2,3,4,5,6,7,8,11,18
 
-    // ============ FRIENDS (30+ relationships for pagination) ============
+    // ============ FRIENDS (Focused on player1/02@gmail.com for pagination testing) ============
     await knex('friends').del();
     const friends = [
+        // Player1 (02@gmail.com / CaroMaster) has 15+ friends for pagination
+        { id: uuidv4(), user_id: player1, friend_id: admin, status: 'accepted' },
         { id: uuidv4(), user_id: player1, friend_id: player2, status: 'accepted' },
         { id: uuidv4(), user_id: player1, friend_id: player3, status: 'accepted' },
         { id: uuidv4(), user_id: player1, friend_id: player4, status: 'accepted' },
@@ -30,90 +32,76 @@ exports.seed = async function (knex) {
         { id: uuidv4(), user_id: player1, friend_id: player7, status: 'accepted' },
         { id: uuidv4(), user_id: player1, friend_id: player8, status: 'accepted' },
         { id: uuidv4(), user_id: player1, friend_id: player9, status: 'accepted' },
+        // Other friendships
         { id: uuidv4(), user_id: player2, friend_id: player3, status: 'accepted' },
         { id: uuidv4(), user_id: player2, friend_id: player5, status: 'accepted' },
-        { id: uuidv4(), user_id: player2, friend_id: player6, status: 'accepted' },
-        { id: uuidv4(), user_id: player2, friend_id: player7, status: 'accepted' },
         { id: uuidv4(), user_id: player3, friend_id: player4, status: 'accepted' },
-        { id: uuidv4(), user_id: player3, friend_id: player5, status: 'accepted' },
-        { id: uuidv4(), user_id: player3, friend_id: player6, status: 'accepted' },
         { id: uuidv4(), user_id: player4, friend_id: player5, status: 'accepted' },
-        { id: uuidv4(), user_id: player4, friend_id: player8, status: 'accepted' },
         { id: uuidv4(), user_id: player5, friend_id: player6, status: 'accepted' },
-        { id: uuidv4(), user_id: player5, friend_id: player7, status: 'accepted' },
         { id: uuidv4(), user_id: player6, friend_id: player7, status: 'accepted' },
-        { id: uuidv4(), user_id: player6, friend_id: player8, status: 'accepted' },
         { id: uuidv4(), user_id: player7, friend_id: player8, status: 'accepted' },
-        { id: uuidv4(), user_id: player7, friend_id: player9, status: 'accepted' },
         { id: uuidv4(), user_id: player8, friend_id: player9, status: 'accepted' },
-        { id: uuidv4(), user_id: player9, friend_id: admin, status: 'accepted' },
-        { id: uuidv4(), user_id: admin, friend_id: player1, status: 'accepted' },
         { id: uuidv4(), user_id: admin, friend_id: player2, status: 'accepted' },
         { id: uuidv4(), user_id: admin, friend_id: player3, status: 'accepted' },
-        { id: uuidv4(), user_id: admin, friend_id: player4, status: 'accepted' },
-        { id: uuidv4(), user_id: admin, friend_id: player5, status: 'accepted' },
+        // Pending requests
         { id: uuidv4(), user_id: player5, friend_id: player9, status: 'pending' },
     ];
     await knex('friends').insert(friends);
-    console.log('✅ Seeded 31 friend relationships');
+    console.log('✅ Seeded 21 friend relationships (player1 has 9 friends)');
 
-    // ============ MESSAGES (50+ messages for pagination) ============
+    // ============ MESSAGES (Focused on player1/02@gmail.com for pagination testing) ============
     await knex('messages').del();
     const messages = [
+        // Player1 (02@gmail.com) conversations - 30+ messages for pagination
+        // With admin
+        { id: uuidv4(), sender_id: admin, receiver_id: player1, content: 'Chào mừng bạn đến với game!' },
+        { id: uuidv4(), sender_id: player1, receiver_id: admin, content: 'Cảm ơn admin!' },
+        { id: uuidv4(), sender_id: admin, receiver_id: player1, content: 'Có gì cần hỗ trợ cứ nói nha!' },
+        { id: uuidv4(), sender_id: player1, receiver_id: admin, content: 'Dạ, cảm ơn admin nhiều!' },
+        // With player2
         { id: uuidv4(), sender_id: player1, receiver_id: player2, content: 'Chào bạn! Chơi Caro không?' },
         { id: uuidv4(), sender_id: player2, receiver_id: player1, content: 'Ok luôn! Đang rảnh nè.' },
         { id: uuidv4(), sender_id: player1, receiver_id: player2, content: 'Để mình tạo phòng nhé!' },
         { id: uuidv4(), sender_id: player2, receiver_id: player1, content: 'Được, mình vào ngay!' },
         { id: uuidv4(), sender_id: player1, receiver_id: player2, content: 'Trận vừa hay quá!' },
         { id: uuidv4(), sender_id: player2, receiver_id: player1, content: 'Ừ, thắng sát nút!' },
-        { id: uuidv4(), sender_id: player1, receiver_id: player2, content: 'Chơi thêm ván nữa không?' },
-        { id: uuidv4(), sender_id: player2, receiver_id: player1, content: 'OK, lần này mình đi trước!' },
-        { id: uuidv4(), sender_id: player1, receiver_id: player2, content: 'Được thôi!' },
-        { id: uuidv4(), sender_id: player2, receiver_id: player1, content: 'GG! Hẹn chơi lại nhé!' },
-        { id: uuidv4(), sender_id: player1, receiver_id: player2, content: 'OK, tối nay online!' },
-        { id: uuidv4(), sender_id: player2, receiver_id: player1, content: 'Okiee!' },
-        { id: uuidv4(), sender_id: player3, receiver_id: player4, content: 'Trận Snake vừa rồi hay quá!' },
-        { id: uuidv4(), sender_id: player4, receiver_id: player3, content: 'Ừ, điểm cao nhất của mình là 800 điểm!' },
-        { id: uuidv4(), sender_id: player3, receiver_id: player4, content: 'Wow, còn mình mới 500 thôi!' },
-        { id: uuidv4(), sender_id: player4, receiver_id: player3, content: 'Cố gắng lên, tip là đừng di chuyển nhanh quá!' },
-        { id: uuidv4(), sender_id: player5, receiver_id: player1, content: 'Tip chơi Tetris đi bạn!' },
-        { id: uuidv4(), sender_id: player1, receiver_id: player5, content: 'Focus vào tạo line, đừng để cao quá!' },
-        { id: uuidv4(), sender_id: player5, receiver_id: player1, content: 'Cảm ơn bạn!' },
-        { id: uuidv4(), sender_id: player1, receiver_id: player5, content: 'Không có gì!' },
-        { id: uuidv4(), sender_id: player6, receiver_id: player7, content: 'Tetris hay quá!' },
-        { id: uuidv4(), sender_id: player7, receiver_id: player6, content: 'Ừ, mình đang cày điểm Snake!' },
-        { id: uuidv4(), sender_id: player6, receiver_id: player7, content: 'Bao nhiêu điểm rồi?' },
-        { id: uuidv4(), sender_id: player7, receiver_id: player6, content: '1200 điểm nè!' },
-        { id: uuidv4(), sender_id: player6, receiver_id: player7, content: 'Khủng thật!' },
-        { id: uuidv4(), sender_id: player8, receiver_id: player9, content: 'Memory game khó vcl!' },
-        { id: uuidv4(), sender_id: player9, receiver_id: player8, content: 'Từ từ nhớ vị trí thôi!' },
-        { id: uuidv4(), sender_id: player8, receiver_id: player9, content: 'Mình qua được level 5 rồi!' },
-        { id: uuidv4(), sender_id: player9, receiver_id: player8, content: 'Giỏi ghê, mình mới level 3!' },
-        { id: uuidv4(), sender_id: admin, receiver_id: player1, content: 'Chào mừng bạn đến game!' },
-        { id: uuidv4(), sender_id: player1, receiver_id: admin, content: 'Cảm ơn admin!' },
-        { id: uuidv4(), sender_id: admin, receiver_id: player1, content: 'Có gì cần hỗ trợ cứ nói nha!' },
-        { id: uuidv4(), sender_id: player1, receiver_id: admin, content: 'Dạ, cảm ơn admin nhiều!' },
-        { id: uuidv4(), sender_id: player2, receiver_id: player5, content: 'Mình mới chơi 2048!' },
-        { id: uuidv4(), sender_id: player5, receiver_id: player2, content: 'Game đó hay lắm!' },
-        { id: uuidv4(), sender_id: player2, receiver_id: player5, content: 'Bao nhiêu điểm là cao?' },
-        { id: uuidv4(), sender_id: player5, receiver_id: player2, content: 'Trên 15000 là khá!' },
-        { id: uuidv4(), sender_id: player3, receiver_id: player6, content: 'Minesweeper khó không?' },
-        { id: uuidv4(), sender_id: player6, receiver_id: player3, content: 'Cũng OK, cẩn thận là được!' },
-        { id: uuidv4(), sender_id: player3, receiver_id: player6, content: 'Mình toàn chết ngay đầu!' },
-        { id: uuidv4(), sender_id: player6, receiver_id: player3, content: 'Nhấn góc trước, an toàn hơn!' },
-        { id: uuidv4(), sender_id: player4, receiver_id: player8, content: 'Match-3 gây nghiện ghê!' },
-        { id: uuidv4(), sender_id: player8, receiver_id: player4, content: 'Combo 5x mới đỉnh!' },
-        { id: uuidv4(), sender_id: player4, receiver_id: player8, content: 'Mình mới làm được combo 3x!' },
-        { id: uuidv4(), sender_id: player8, receiver_id: player4, content: 'Cố gắng tạo L hoặc T shape!' },
-        { id: uuidv4(), sender_id: player1, receiver_id: player3, content: 'Chơi Caro không?' },
-        { id: uuidv4(), sender_id: player3, receiver_id: player1, content: 'Đang bận, tí nữa nhé!' },
+        // With player3
+        { id: uuidv4(), sender_id: player1, receiver_id: player3, content: 'Chơi Snake không?' },
+        { id: uuidv4(), sender_id: player3, receiver_id: player1, content: 'OK, thi điểm cao!' },
+        { id: uuidv4(), sender_id: player1, receiver_id: player3, content: 'Mình được 800 điểm!' },
+        { id: uuidv4(), sender_id: player3, receiver_id: player1, content: 'Mình mới 500 thôi!' },
+        // With player4
         { id: uuidv4(), sender_id: player1, receiver_id: player4, content: 'Hello!' },
         { id: uuidv4(), sender_id: player4, receiver_id: player1, content: 'Hi! Chơi game gì?' },
-        { id: uuidv4(), sender_id: player1, receiver_id: player4, content: 'Snake đi!' },
-        { id: uuidv4(), sender_id: player4, receiver_id: player1, content: 'OK, thi xem ai cao điểm hơn!' },
+        { id: uuidv4(), sender_id: player1, receiver_id: player4, content: 'Tetris đi!' },
+        { id: uuidv4(), sender_id: player4, receiver_id: player1, content: 'OK let go!' },
+        // With player5
+        { id: uuidv4(), sender_id: player5, receiver_id: player1, content: 'Tip chơi Tetris đi bạn!' },
+        { id: uuidv4(), sender_id: player1, receiver_id: player5, content: 'Focus vào tạo line!' },
+        { id: uuidv4(), sender_id: player5, receiver_id: player1, content: 'Cảm ơn bạn!' },
+        { id: uuidv4(), sender_id: player1, receiver_id: player5, content: 'Không có gì!' },
+        // With player6
+        { id: uuidv4(), sender_id: player1, receiver_id: player6, content: 'Bạn chơi Caro hay thật!' },
+        { id: uuidv4(), sender_id: player6, receiver_id: player1, content: 'Cảm ơn, mình tập nhiều!' },
+        // With player7
+        { id: uuidv4(), sender_id: player1, receiver_id: player7, content: 'Snake King ơi, dạy mình!' },
+        { id: uuidv4(), sender_id: player7, receiver_id: player1, content: '1200 điểm là bí kíp!' },
+        // With player8
+        { id: uuidv4(), sender_id: player1, receiver_id: player8, content: 'Memory khó không?' },
+        { id: uuidv4(), sender_id: player8, receiver_id: player1, content: 'Cần tập trung thôi!' },
+        // With player9
+        { id: uuidv4(), sender_id: player1, receiver_id: player9, content: 'Match-3 gây nghiện ghê!' },
+        { id: uuidv4(), sender_id: player9, receiver_id: player1, content: 'Combo 5x phê lắm!' },
+        // Other conversations
+        { id: uuidv4(), sender_id: player3, receiver_id: player4, content: 'Trận Snake vừa rồi hay quá!' },
+        { id: uuidv4(), sender_id: player4, receiver_id: player3, content: 'Ừ, điểm cao nhất của mình là 800 điểm!' },
+        { id: uuidv4(), sender_id: player6, receiver_id: player7, content: 'Tetris hay quá!' },
+        { id: uuidv4(), sender_id: player7, receiver_id: player6, content: 'Ừ, mình đang cày điểm Snake!' },
+        { id: uuidv4(), sender_id: player8, receiver_id: player9, content: 'Memory game khó vcl!' },
+        { id: uuidv4(), sender_id: player9, receiver_id: player8, content: 'Từ từ nhớ vị trí thôi!' },
     ];
     await knex('messages').insert(messages);
-    console.log('✅ Seeded 51 messages');
+    console.log('✅ Seeded 36 messages (player1 has 26 messages)');
 
     // ============ GAME SESSIONS (40+ sessions cho tất cả games) ============
     await knex('game_sessions').del();

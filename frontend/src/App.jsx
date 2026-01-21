@@ -70,7 +70,7 @@ const AdminRoute = ({ children }) => {
 
 // Guest Route (redirect if logged in)
 const GuestRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
   if (loading) {
     return (
@@ -86,7 +86,8 @@ const GuestRoute = ({ children }) => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/games" replace />;
+    // Admin goes to admin dashboard, users go to games
+    return <Navigate to={isAdmin ? "/admin" : "/games"} replace />;
   }
 
   return children;
