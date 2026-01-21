@@ -41,8 +41,22 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// API Documentation (public for demo)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+// API Documentation (protected with API key - supports header or query param)
+const apiDocsAuth = (req, res, next) => {
+    const apiKey = req.headers['x-api-key'] || req.query.key;
+    if (apiKey === process.env.API_KEY) {
+        return next();
+    }
+    res.status(401).json({
+        success: false,
+        error: {
+            code: 'UNAUTHORIZED',
+            message: 'API Key required. Add ?key=YOUR_API_KEY or X-API-Key header'
+        }
+    });
+};
+
+app.use('/api-docs', apiDocsAuth, swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Board Game API Documentation'
 }));
