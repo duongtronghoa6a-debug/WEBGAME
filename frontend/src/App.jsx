@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import MainLayout from './layouts/MainLayout';
+import AdminLayout from './layouts/AdminLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -12,7 +13,6 @@ import Rankings from './pages/Rankings';
 import Profile from './pages/Profile';
 import Achievements from './pages/Achievements';
 import Admin from './pages/Admin';
-import CaroGame from './components/games/CaroGame';
 import GameRouter from './components/games/GameRouter';
 import './styles/globals.css';
 
@@ -35,6 +35,34 @@ const ProtectedRoute = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+// Admin Route (requires admin privileges)
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh'
+      }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/games" replace />;
   }
 
   return children;
@@ -68,6 +96,7 @@ const GuestRoute = ({ children }) => {
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* User Routes */}
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="login" element={
@@ -100,15 +129,22 @@ const AppRoutes = () => {
         <Route path="achievements" element={
           <ProtectedRoute><Achievements /></ProtectedRoute>
         } />
-        <Route path="admin" element={
-          <ProtectedRoute><Admin /></ProtectedRoute>
-        } />
         <Route path="*" element={
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <h1>404</h1>
             <p>Trang không tồn tại</p>
           </div>
         } />
+      </Route>
+
+      {/* Admin Routes - Separate Layout */}
+      <Route path="/admin" element={
+        <AdminRoute><AdminLayout /></AdminRoute>
+      }>
+        <Route index element={<Admin />} />
+        <Route path="rankings" element={<Rankings />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Profile />} />
       </Route>
     </Routes>
   );
@@ -127,3 +163,4 @@ function App() {
 }
 
 export default App;
+
