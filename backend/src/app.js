@@ -41,8 +41,8 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// API Documentation (public access for easy testing)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+// API Documentation (protected with API key)
+app.use('/api-docs', apiKeyAuth, swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Board Game API Documentation'
 }));

@@ -14,9 +14,21 @@ const adminController = require('../controllers/adminController');
 const { auth, optionalAuth } = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
 
+// Import validators
+const {
+    validate,
+    registerRules,
+    loginRules,
+    updateProfileRules,
+    messageRules,
+    friendRequestRules,
+    ratingRules,
+    commentRules
+} = require('../validators');
+
 // ============== AUTH ROUTES ==============
-router.post('/auth/register', authController.register);
-router.post('/auth/login', authController.login);
+router.post('/auth/register', registerRules, validate, authController.register);
+router.post('/auth/login', loginRules, validate, authController.login);
 router.post('/auth/logout', auth, authController.logout);
 router.get('/auth/me', auth, authController.me);
 
@@ -25,10 +37,10 @@ router.get('/users', auth, userController.search);
 router.get('/achievements', auth, userController.getMyAchievements); // Current user achievements
 // Current user profile routes (must be before :id routes!)
 router.get('/users/profile/stats', auth, userController.getMyStats);
-router.put('/users/profile', auth, userController.updateMyProfile);
+router.put('/users/profile', auth, updateProfileRules, validate, userController.updateMyProfile);
 // User by ID routes
 router.get('/users/:id', auth, userController.getProfile);
-router.put('/users/:id', auth, userController.updateProfile);
+router.put('/users/:id', auth, updateProfileRules, validate, userController.updateProfile);
 router.get('/users/:id/achievements', auth, userController.getAchievements);
 
 // ============== GAME ROUTES ==============
@@ -38,16 +50,16 @@ router.get('/games/:id', optionalAuth, gameController.getById);
 router.post('/games/:id/sessions', auth, gameController.createSession);
 router.get('/games/sessions/:sessionId', auth, gameController.getSession);
 router.put('/games/sessions/:sessionId', auth, gameController.updateSession);
-router.post('/games/:id/ratings', auth, gameController.rateGame);
+router.post('/games/:id/ratings', auth, ratingRules, validate, gameController.rateGame);
 router.get('/games/:id/ratings', optionalAuth, gameController.getRatings);
-router.post('/games/:id/comments', auth, gameController.commentGame);
+router.post('/games/:id/comments', auth, commentRules, validate, gameController.commentGame);
 router.get('/games/:id/comments', auth, gameController.getComments);
 
 // ============== FRIEND ROUTES ==============
 router.get('/friends', auth, friendController.getFriends);
 router.get('/friends/pending', auth, friendController.getPendingRequests);
 router.get('/friends/requests', auth, friendController.getPendingRequests); // Alias
-router.post('/friends/request', auth, friendController.sendRequest);
+router.post('/friends/request', auth, friendRequestRules, validate, friendController.sendRequest);
 router.put('/friends/:requestId/accept', auth, friendController.acceptRequest);
 router.put('/friends/:requestId/reject', auth, friendController.rejectRequest);
 router.delete('/friends/:friendId', auth, friendController.removeFriend);
@@ -57,7 +69,7 @@ router.get('/friends/status/:userId', auth, friendController.checkStatus);
 router.get('/messages/conversations', auth, messageController.getConversations);
 router.get('/messages/unread', auth, messageController.getUnreadCount);
 router.get('/messages/:userId', auth, messageController.getMessages);
-router.post('/messages', auth, messageController.sendMessage);
+router.post('/messages', auth, messageRules, validate, messageController.sendMessage);
 router.put('/messages/:messageId/read', auth, messageController.markAsRead);
 
 // ============== RANKING ROUTES ==============
