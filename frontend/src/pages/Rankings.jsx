@@ -170,27 +170,32 @@ const Rankings = () => {
                 </div>
 
                 <div className="table-body">
-                    {rankings.map((player, index) => (
-                        <div key={player.user_id || index} className={`table-row ${getRankClass(player.rank)} ${getDisplayName(player) === 'Tôi' ? 'is-me' : ''}`}>
-                            <span className="col-rank">
-                                {getRankIcon(player.rank)}
-                            </span>
-                            <span className="col-player">
-                                <div className="player-avatar">
-                                    {getDisplayName(player).charAt(0).toUpperCase()}
-                                </div>
-                                <span className="player-name">{getDisplayName(player)}</span>
-                            </span>
-                            <span className="col-score">{(player.total_score || 0).toLocaleString()}</span>
-                            <span className="col-games">{player.games_played || 0}</span>
-                            <span className="col-avg">{player.avg_score || 0}</span>
-                        </div>
-                    ))}
+                    {(() => {
+                        // Calculate paginated rankings
+                        const startIndex = (currentPage - 1) * itemsPerPage;
+                        const paginatedRankings = rankings.slice(startIndex, startIndex + itemsPerPage);
+                        return paginatedRankings.map((player, index) => (
+                            <div key={player.user_id || index} className={`table-row ${getRankClass(player.rank)} ${getDisplayName(player) === 'Tôi' ? 'is-me' : ''}`}>
+                                <span className="col-rank">
+                                    {getRankIcon(player.rank)}
+                                </span>
+                                <span className="col-player">
+                                    <div className="player-avatar">
+                                        {getDisplayName(player).charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="player-name">{getDisplayName(player)}</span>
+                                </span>
+                                <span className="col-score">{(player.total_score || 0).toLocaleString()}</span>
+                                <span className="col-games">{player.games_played || 0}</span>
+                                <span className="col-avg">{player.avg_score || 0}</span>
+                            </div>
+                        ));
+                    })()}
                 </div>
             </div>
 
             {/* Pagination */}
-            {rankings.length > itemsPerPage && (
+            {rankings.length > 0 && (
                 <Pagination
                     currentPage={currentPage}
                     totalPages={Math.ceil(rankings.length / itemsPerPage)}

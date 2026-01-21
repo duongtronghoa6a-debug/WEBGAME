@@ -268,35 +268,40 @@ const Friends = () => {
                                 <span>Hãy tìm kiếm và kết bạn!</span>
                             </div>
                         ) : (
-                            friends.map(friend => (
-                                <div key={friend.id} className="friend-card">
-                                    <div className="friend-avatar">
-                                        {friend.avatar_url ? (
-                                            <img src={friend.avatar_url} alt={friend.username} />
-                                        ) : (
-                                            <UsersIcon size={24} />
-                                        )}
-                                        <span className={`status-dot ${friend.status || 'offline'}`}></span>
+                            (() => {
+                                // Calculate paginated friends
+                                const startIndex = (currentPage - 1) * itemsPerPage;
+                                const paginatedFriends = friends.slice(startIndex, startIndex + itemsPerPage);
+                                return paginatedFriends.map(friend => (
+                                    <div key={friend.id} className="friend-card">
+                                        <div className="friend-avatar">
+                                            {friend.avatar_url ? (
+                                                <img src={friend.avatar_url} alt={friend.username} />
+                                            ) : (
+                                                <UsersIcon size={24} />
+                                            )}
+                                            <span className={`status-dot ${friend.status || 'offline'}`}></span>
+                                        </div>
+                                        <div className="friend-info">
+                                            <span className="username">{friend.username}</span>
+                                            <span className="status-text">
+                                                {friend.status === 'online' ? 'Đang online' : 'Offline'}
+                                            </span>
+                                        </div>
+                                        <div className="friend-actions">
+                                            <Link to={`/messages?user=${friend.id}`} className="btn btn-outline btn-sm">
+                                                <MessageSquare size={16} />
+                                            </Link>
+                                            <button
+                                                className="btn btn-outline btn-sm danger"
+                                                onClick={() => removeFriend(friend.id)}
+                                            >
+                                                <UserMinus size={16} />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="friend-info">
-                                        <span className="username">{friend.username}</span>
-                                        <span className="status-text">
-                                            {friend.status === 'online' ? 'Đang online' : 'Offline'}
-                                        </span>
-                                    </div>
-                                    <div className="friend-actions">
-                                        <Link to={`/messages?user=${friend.id}`} className="btn btn-outline btn-sm">
-                                            <MessageSquare size={16} />
-                                        </Link>
-                                        <button
-                                            className="btn btn-outline btn-sm danger"
-                                            onClick={() => removeFriend(friend.id)}
-                                        >
-                                            <UserMinus size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
+                                ));
+                            })()
                         )}
 
                         {/* Pagination */}

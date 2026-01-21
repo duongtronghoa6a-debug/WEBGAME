@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Send, ArrowLeft, Users as UsersIcon } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import Pagination from '../components/common/Pagination';
 import './Messages.css';
 
 const Messages = () => {
@@ -15,6 +16,10 @@ const Messages = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
+
+    // Pagination for conversations
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchConversations();
@@ -134,26 +139,40 @@ const Messages = () => {
                             <p>Chưa có tin nhắn</p>
                         </div>
                     ) : (
-                        conversations.map(conv => (
-                            <div
-                                key={conv.id}
-                                className={`conversation-item ${selectedUser?.id === conv.user.id ? 'active' : ''}`}
-                                onClick={() => selectConversation(conv)}
-                            >
-                                <div className="conv-avatar">
-                                    <UsersIcon size={20} />
+                        (() => {
+                            const startIndex = (currentPage - 1) * itemsPerPage;
+                            const paginatedConversations = conversations.slice(startIndex, startIndex + itemsPerPage);
+                            return paginatedConversations.map(conv => (
+                                <div
+                                    key={conv.id}
+                                    className={`conversation-item ${selectedUser?.id === conv.user.id ? 'active' : ''}`}
+                                    onClick={() => selectConversation(conv)}
+                                >
+                                    <div className="conv-avatar">
+                                        <UsersIcon size={20} />
+                                    </div>
+                                    <div className="conv-info">
+                                        <span className="conv-name">{conv.user.username}</span>
+                                        <span className="conv-last">{typeof conv.last_message === 'string' ? conv.last_message : conv.last_message?.content || ''}</span>
+                                    </div>
+                                    {conv.unread > 0 && (
+                                        <span className="unread-badge">{conv.unread}</span>
+                                    )}
                                 </div>
-                                <div className="conv-info">
-                                    <span className="conv-name">{conv.user.username}</span>
-                                    <span className="conv-last">{typeof conv.last_message === 'string' ? conv.last_message : conv.last_message?.content || ''}</span>
-                                </div>
-                                {conv.unread > 0 && (
-                                    <span className="unread-badge">{conv.unread}</span>
-                                )}
-                            </div>
-                        ))
+                            ));
+                        })()
                     )}
                 </div>
+                {/* Pagination for conversations */}
+                {conversations.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(conversations.length / itemsPerPage)}
+                        onPageChange={setCurrentPage}
+                        totalItems={conversations.length}
+                        itemsPerPage={itemsPerPage}
+                    />
+                )}
             </div>
 
             {/* Chat Area */}
