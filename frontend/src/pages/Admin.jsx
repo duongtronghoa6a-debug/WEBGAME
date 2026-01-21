@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import Pagination from '../components/common/Pagination';
 import './Admin.css';
 
 const Admin = () => {
@@ -18,6 +19,10 @@ const Admin = () => {
     const [loading, setLoading] = useState(true);
     const [editingGame, setEditingGame] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
+
+    // Pagination for users
+    const [userPage, setUserPage] = useState(1);
+    const usersPerPage = 10;
 
     useEffect(() => {
         if (isAdmin) {
@@ -365,33 +370,47 @@ const Admin = () => {
                             <span>Ngày tạo</span>
                             <span>Hành động</span>
                         </div>
-                        {users.map(u => (
-                            <div key={u.id} className="table-row">
-                                <span className="user-name">{u.username}</span>
-                                <span className="user-email">{u.email}</span>
-                                <span className={`role-badge ${u.role}`}>{u.role}</span>
-                                <span className={`status-badge ${u.status}`}>{u.status}</span>
-                                <span>{new Date(u.created_at).toLocaleDateString('vi-VN')}</span>
-                                <span className="actions">
-                                    <button
-                                        className="action-btn"
-                                        onClick={() => toggleUserStatus(u.id, u.status)}
-                                        title={u.status === 'active' ? 'Ban' : 'Unban'}
-                                    >
-                                        <Shield size={16} />
-                                    </button>
-                                    <button
-                                        className="action-btn danger"
-                                        onClick={() => deleteUser(u.id)}
-                                        disabled={u.role === 'admin'}
-                                        title="Xóa"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </span>
-                            </div>
-                        ))}
+                        {(() => {
+                            const startIndex = (userPage - 1) * usersPerPage;
+                            const paginatedUsers = users.slice(startIndex, startIndex + usersPerPage);
+                            return paginatedUsers.map(u => (
+                                <div key={u.id} className="table-row">
+                                    <span className="user-name">{u.username}</span>
+                                    <span className="user-email">{u.email}</span>
+                                    <span className={`role-badge ${u.role}`}>{u.role}</span>
+                                    <span className={`status-badge ${u.status}`}>{u.status}</span>
+                                    <span>{new Date(u.created_at).toLocaleDateString('vi-VN')}</span>
+                                    <span className="actions">
+                                        <button
+                                            className="action-btn"
+                                            onClick={() => toggleUserStatus(u.id, u.status)}
+                                            title={u.status === 'active' ? 'Ban' : 'Unban'}
+                                        >
+                                            <Shield size={16} />
+                                        </button>
+                                        <button
+                                            className="action-btn danger"
+                                            onClick={() => deleteUser(u.id)}
+                                            disabled={u.role === 'admin'}
+                                            title="Xóa"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </span>
+                                </div>
+                            ));
+                        })()}
                     </div>
+                    {/* Pagination for users */}
+                    {users.length > 0 && (
+                        <Pagination
+                            currentPage={userPage}
+                            totalPages={Math.ceil(users.length / usersPerPage)}
+                            onPageChange={setUserPage}
+                            totalItems={users.length}
+                            itemsPerPage={usersPerPage}
+                        />
+                    )}
                 </div>
             )}
 

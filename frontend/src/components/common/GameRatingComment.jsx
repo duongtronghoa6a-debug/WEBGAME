@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Star, Send, MessageCircle, User } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import Pagination from './Pagination';
 import './GameRatingComment.css';
 
 const GameRatingComment = ({ gameId }) => {
@@ -15,6 +16,10 @@ const GameRatingComment = ({ gameId }) => {
     const [avgRating, setAvgRating] = useState(0);
     const [totalRatings, setTotalRatings] = useState(0);
     const [showComments, setShowComments] = useState(false);
+
+    // Pagination for comments
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     useEffect(() => {
         if (gameId) {
@@ -81,6 +86,7 @@ const GameRatingComment = ({ gameId }) => {
         try {
             await api.post(`/games/${gameId}/comments`, { content: newComment });
             setNewComment('');
+            setCurrentPage(1); // Reset to first page when new comment added
             fetchComments();
         } catch (error) {
             console.error('Error submitting comment:', error);
@@ -102,6 +108,11 @@ const GameRatingComment = ({ gameId }) => {
         if (hours < 24) return `${hours} giờ trước`;
         return `${days} ngày trước`;
     };
+
+    // Calculate paginated comments
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedComments = comments.slice(startIndex, startIndex + itemsPerPage);
+    const totalPages = Math.ceil(comments.length / itemsPerPage);
 
     return (
         <div className="game-rating-comment">
@@ -169,7 +180,7 @@ const GameRatingComment = ({ gameId }) => {
                             {comments.length === 0 ? (
                                 <p className="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
                             ) : (
-                                comments.map((comment) => (
+                                paginatedComments.map((comment) => (
                                     <div key={comment.id} className="comment-item">
                                         <div className="comment-avatar">
                                             <User size={20} />
@@ -189,6 +200,17 @@ const GameRatingComment = ({ gameId }) => {
                                 ))
                             )}
                         </div>
+
+                        {/* Pagination for comments */}
+                        {comments.length > 0 && (
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                                totalItems={comments.length}
+                                itemsPerPage={itemsPerPage}
+                            />
+                        )}
                     </>
                 )}
             </div>
@@ -197,3 +219,4 @@ const GameRatingComment = ({ gameId }) => {
 };
 
 export default GameRatingComment;
+

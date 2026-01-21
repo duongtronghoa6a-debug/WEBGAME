@@ -229,7 +229,7 @@ exports.seed = async function (knex) {
     ]);
     console.log('✅ Seeded 35 ratings across all games');
 
-    // ============ COMMENTS (comments cho tất cả games) ============
+    // ============ COMMENTS (comments cho tất cả games, Snake có nhiều nhất để demo pagination) ============
     await knex('comments').del();
     await knex('comments').insert([
         // Game 1 - Caro Hàng 5
@@ -243,10 +243,22 @@ exports.seed = async function (knex) {
         // Game 3 - Tic-Tac-Toe
         { id: uuidv4(), user_id: player3, game_id: 3, content: 'Tic-tac-toe đơn giản nhưng vui.' },
         { id: uuidv4(), user_id: player4, game_id: 3, content: 'Game đầu tiên tôi thắng!' },
-        // Game 4 - Snake
+        // Game 4 - Snake (15 comments để demo pagination)
         { id: uuidv4(), user_id: player1, game_id: 4, content: 'Snake gợi nhớ tuổi thơ!' },
         { id: uuidv4(), user_id: player5, game_id: 4, content: 'Đã đạt 800 điểm, ai hơn không?' },
         { id: uuidv4(), user_id: player7, game_id: 4, content: 'Snake King đây! 1200 điểm nhé!' },
+        { id: uuidv4(), user_id: player2, game_id: 4, content: 'Game này cực kỳ cuốn!' },
+        { id: uuidv4(), user_id: player3, game_id: 4, content: 'Bí quyết là di chuyển từ từ!' },
+        { id: uuidv4(), user_id: player4, game_id: 4, content: 'Mình chơi hoài không chán!' },
+        { id: uuidv4(), user_id: player6, game_id: 4, content: 'Snake classic nhưng hay!' },
+        { id: uuidv4(), user_id: player8, game_id: 4, content: 'Graphic đẹp, smooth!' },
+        { id: uuidv4(), user_id: player9, game_id: 4, content: '500 điểm là tốt chưa?' },
+        { id: uuidv4(), user_id: admin, game_id: 4, content: 'Chúc các bạn đạt high score!' },
+        { id: uuidv4(), user_id: player1, game_id: 4, content: 'Lần 2 mình được 900 điểm!' },
+        { id: uuidv4(), user_id: player2, game_id: 4, content: 'Cày điểm thôi nào!' },
+        { id: uuidv4(), user_id: player3, game_id: 4, content: 'Game tuổi thơ của tôi!' },
+        { id: uuidv4(), user_id: player5, game_id: 4, content: 'Ai có tip không chia sẻ với!' },
+        { id: uuidv4(), user_id: player7, game_id: 4, content: 'Best game ever!' },
         // Game 5 - Match-3
         { id: uuidv4(), user_id: player2, game_id: 5, content: 'Match-3 gây nghiện thật!' },
         { id: uuidv4(), user_id: player3, game_id: 5, content: 'Candy Crush phiên bản web!' },
@@ -273,7 +285,7 @@ exports.seed = async function (knex) {
         { id: uuidv4(), user_id: player5, game_id: 18, content: 'Game này cần chiến thuật!' },
         { id: uuidv4(), user_id: player9, game_id: 18, content: '10000 điểm thôi, còn phải cày!' },
     ]);
-    console.log('✅ Seeded 30 comments across all games');
+    console.log('✅ Seeded 42 comments (Snake has 15 for pagination demo)');
 
     // ============ USER ACHIEVEMENTS (expanded) ============
     await knex('user_achievements').del();
