@@ -43,6 +43,11 @@ app.get('/api/health', (req, res) => {
 
 // API Documentation (protected with API key - supports header or query param)
 const apiDocsAuth = (req, res, next) => {
+    // Allow static assets (CSS, JS) to pass through
+    if (req.path.includes('.css') || req.path.includes('.js') || req.path.includes('.png') || req.path.includes('.ico')) {
+        return next();
+    }
+
     const apiKey = req.headers['x-api-key'] || req.query.key;
     if (apiKey === process.env.API_KEY) {
         return next();
