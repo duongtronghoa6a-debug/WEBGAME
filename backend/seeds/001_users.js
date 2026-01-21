@@ -1,7 +1,8 @@
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
 
 /**
- * Seed users (10 users với đầy đủ thông tin)
+ * Seed users (25 users for pagination testing)
  */
 exports.seed = async function (knex) {
     // Delete existing data
@@ -9,7 +10,7 @@ exports.seed = async function (knex) {
 
     const password = await bcrypt.hash('111111', 12);
 
-    await knex('users').insert([
+    const users = [
         {
             id: 'a1111111-1111-1111-1111-111111111111',
             email: '01@gmail.com',
@@ -71,7 +72,7 @@ exports.seed = async function (knex) {
             role: 'player'
         },
         {
-            id: 'g7777777-7777-7777-7777-777777777777',
+            id: 'a7777777-7777-7777-7777-777777777777',
             email: '07@gmail.com',
             username: 'TetrisPro',
             password_hash: password,
@@ -81,7 +82,7 @@ exports.seed = async function (knex) {
             role: 'player'
         },
         {
-            id: 'h8888888-8888-8888-8888-888888888888',
+            id: 'a8888888-8888-8888-8888-888888888888',
             email: '08@gmail.com',
             username: 'SnakeKing',
             password_hash: password,
@@ -91,7 +92,7 @@ exports.seed = async function (knex) {
             role: 'player'
         },
         {
-            id: 'i9999999-9999-9999-9999-999999999999',
+            id: 'a9999999-9999-9999-9999-999999999999',
             email: '09@gmail.com',
             username: 'MemoryMaster',
             password_hash: password,
@@ -101,7 +102,7 @@ exports.seed = async function (knex) {
             role: 'player'
         },
         {
-            id: 'j0000000-0000-0000-0000-000000000000',
+            id: 'a0000000-0000-0000-0000-000000000000',
             email: '10@gmail.com',
             username: 'Match3King',
             password_hash: password,
@@ -110,8 +111,22 @@ exports.seed = async function (knex) {
             status: 'active',
             role: 'player'
         }
-    ]);
+    ];
 
-    console.log('✅ Seeded 10 users');
+    // Add 15 more users for pagination testing (using uuidv4)
+    for (let i = 11; i <= 25; i++) {
+        users.push({
+            id: uuidv4(),
+            email: `${i.toString().padStart(2, '0')}@gmail.com`,
+            username: `Player${i}`,
+            password_hash: password,
+            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=player${i}`,
+            is_admin: false,
+            status: 'active',
+            role: 'player'
+        });
+    }
+
+    await knex('users').insert(users);
+    console.log('✅ Seeded 25 users');
 };
-

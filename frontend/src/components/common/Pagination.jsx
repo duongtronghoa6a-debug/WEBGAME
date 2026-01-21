@@ -17,7 +17,7 @@ const Pagination = ({
     totalItems = 0,
     showInfo = true
 }) => {
-    if (totalPages <= 1) return null;
+    // Always show pagination, even for 1 page
 
     const handlePrev = () => {
         if (currentPage > 1) onPageChange(currentPage - 1);
