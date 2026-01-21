@@ -103,70 +103,80 @@ exports.seed = async function (knex) {
     await knex('messages').insert(messages);
     console.log('✅ Seeded 36 messages (player1 has 26 messages)');
 
-    // ============ GAME SESSIONS (40+ sessions cho tất cả games) ============
+    // ============ GAME SESSIONS (Đa dạng số lượt chơi cho từng game) ============
     await knex('game_sessions').del();
     const sessions = [
-        // Game 1 - Caro Hàng 5
+        // Game 1 - Caro Hàng 5 (13 sessions - game phổ biến nhất)
         { id: uuidv4(), user_id: player1, game_id: 1, state: JSON.stringify({ board: [] }), score: 1500, time_spent: 300, completed: true },
         { id: uuidv4(), user_id: player1, game_id: 1, state: JSON.stringify({ board: [] }), score: 1800, time_spent: 280, completed: true },
+        { id: uuidv4(), user_id: player1, game_id: 1, state: JSON.stringify({ board: [] }), score: 2100, time_spent: 250, completed: true },
         { id: uuidv4(), user_id: player2, game_id: 1, state: JSON.stringify({ board: [] }), score: 1200, time_spent: 320, completed: true },
+        { id: uuidv4(), user_id: player2, game_id: 1, state: JSON.stringify({ board: [] }), score: 1400, time_spent: 300, completed: true },
         { id: uuidv4(), user_id: player3, game_id: 1, state: JSON.stringify({ board: [] }), score: 800, time_spent: 400, completed: true },
+        { id: uuidv4(), user_id: player3, game_id: 1, state: JSON.stringify({ board: [] }), score: 950, time_spent: 380, completed: true },
+        { id: uuidv4(), user_id: player4, game_id: 1, state: JSON.stringify({ board: [] }), score: 600, time_spent: 450, completed: true },
         { id: uuidv4(), user_id: player5, game_id: 1, state: JSON.stringify({ board: [] }), score: 2000, time_spent: 200, completed: true },
+        { id: uuidv4(), user_id: player5, game_id: 1, state: JSON.stringify({ board: [] }), score: 2200, time_spent: 180, completed: true },
+        { id: uuidv4(), user_id: player6, game_id: 1, state: JSON.stringify({ board: [] }), score: 1100, time_spent: 350, completed: true },
+        { id: uuidv4(), user_id: player7, game_id: 1, state: JSON.stringify({ board: [] }), score: 1300, time_spent: 330, completed: true },
+        { id: uuidv4(), user_id: player8, game_id: 1, state: JSON.stringify({ board: [] }), score: 900, time_spent: 400, completed: true },
 
-        // Game 2 - Caro Hàng 4
-        { id: uuidv4(), user_id: player1, game_id: 2, state: JSON.stringify({ board: [] }), score: 900, time_spent: 150, completed: true },
-        { id: uuidv4(), user_id: player2, game_id: 2, state: JSON.stringify({ board: [] }), score: 750, time_spent: 180, completed: true },
-        { id: uuidv4(), user_id: player5, game_id: 2, state: JSON.stringify({ board: [] }), score: 1200, time_spent: 120, completed: true },
-
-        // Game 3 - Tic-Tac-Toe
-        { id: uuidv4(), user_id: player2, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 60, completed: true },
-        { id: uuidv4(), user_id: player3, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 45, completed: true },
-        { id: uuidv4(), user_id: player4, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 30, completed: true },
-
-        // Game 4 - Snake
+        // Game 4 - Snake (9 sessions)
         { id: uuidv4(), user_id: player1, game_id: 4, state: JSON.stringify({ snake: [] }), score: 450, time_spent: 120, completed: true },
+        { id: uuidv4(), user_id: player1, game_id: 4, state: JSON.stringify({ snake: [] }), score: 620, time_spent: 150, completed: true },
         { id: uuidv4(), user_id: player2, game_id: 4, state: JSON.stringify({ snake: [] }), score: 550, time_spent: 180, completed: true },
+        { id: uuidv4(), user_id: player3, game_id: 4, state: JSON.stringify({ snake: [] }), score: 380, time_spent: 100, completed: true },
         { id: uuidv4(), user_id: player5, game_id: 4, state: JSON.stringify({ snake: [] }), score: 800, time_spent: 300, completed: true },
         { id: uuidv4(), user_id: player7, game_id: 4, state: JSON.stringify({ snake: [] }), score: 1200, time_spent: 450, completed: true },
         { id: uuidv4(), user_id: player7, game_id: 4, state: JSON.stringify({ snake: [] }), score: 950, time_spent: 380, completed: true },
+        { id: uuidv4(), user_id: player8, game_id: 4, state: JSON.stringify({ snake: [] }), score: 720, time_spent: 280, completed: true },
+        { id: uuidv4(), user_id: player9, game_id: 4, state: JSON.stringify({ snake: [] }), score: 850, time_spent: 320, completed: true },
 
-        // Game 5 - Match-3
+        // Game 3 - Tic-Tac-Toe (6 sessions)
+        { id: uuidv4(), user_id: player2, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 60, completed: true },
+        { id: uuidv4(), user_id: player3, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 45, completed: true },
+        { id: uuidv4(), user_id: player4, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 30, completed: true },
+        { id: uuidv4(), user_id: player5, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 40, completed: true },
+        { id: uuidv4(), user_id: player6, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 35, completed: true },
+        { id: uuidv4(), user_id: player7, game_id: 3, state: JSON.stringify({ board: [] }), score: 50, time_spent: 55, completed: true },
+
+        // Game 5 - Match-3 (5 sessions)
         { id: uuidv4(), user_id: player2, game_id: 5, state: JSON.stringify({ board: [] }), score: 2500, time_spent: 100, completed: true },
         { id: uuidv4(), user_id: player3, game_id: 5, state: JSON.stringify({ board: [] }), score: 1800, time_spent: 110, completed: true },
         { id: uuidv4(), user_id: player5, game_id: 5, state: JSON.stringify({ board: [] }), score: 3500, time_spent: 115, completed: true },
         { id: uuidv4(), user_id: player9, game_id: 5, state: JSON.stringify({ board: [] }), score: 4200, time_spent: 120, completed: true },
         { id: uuidv4(), user_id: player9, game_id: 5, state: JSON.stringify({ board: [] }), score: 3800, time_spent: 105, completed: true },
 
-        // Game 6 - Memory
+        // Game 2 - Caro Hàng 4 (4 sessions)
+        { id: uuidv4(), user_id: player1, game_id: 2, state: JSON.stringify({ board: [] }), score: 900, time_spent: 150, completed: true },
+        { id: uuidv4(), user_id: player2, game_id: 2, state: JSON.stringify({ board: [] }), score: 750, time_spent: 180, completed: true },
+        { id: uuidv4(), user_id: player5, game_id: 2, state: JSON.stringify({ board: [] }), score: 1200, time_spent: 120, completed: true },
+        { id: uuidv4(), user_id: player6, game_id: 2, state: JSON.stringify({ board: [] }), score: 680, time_spent: 200, completed: true },
+
+        // Game 6 - Memory (4 sessions)
         { id: uuidv4(), user_id: player2, game_id: 6, state: JSON.stringify({ cards: [] }), score: 200, time_spent: 90, completed: true },
         { id: uuidv4(), user_id: player3, game_id: 6, state: JSON.stringify({ cards: [] }), score: 180, time_spent: 75, completed: true },
         { id: uuidv4(), user_id: player8, game_id: 6, state: JSON.stringify({ cards: [] }), score: 300, time_spent: 60, completed: true },
         { id: uuidv4(), user_id: player8, game_id: 6, state: JSON.stringify({ cards: [] }), score: 280, time_spent: 65, completed: true },
 
-        // Game 7 - Drawing Board (no sessions needed, it's creative)
-
-        // Game 8 - Tetris
+        // Game 8 - Tetris (5 sessions)
         { id: uuidv4(), user_id: player5, game_id: 8, state: JSON.stringify({ board: [] }), score: 3500, time_spent: 400, completed: true },
         { id: uuidv4(), user_id: player6, game_id: 8, state: JSON.stringify({ board: [] }), score: 5000, time_spent: 600, completed: true },
         { id: uuidv4(), user_id: player6, game_id: 8, state: JSON.stringify({ board: [] }), score: 4500, time_spent: 550, completed: true },
         { id: uuidv4(), user_id: player1, game_id: 8, state: JSON.stringify({ board: [] }), score: 2800, time_spent: 350, completed: true },
         { id: uuidv4(), user_id: player2, game_id: 8, state: JSON.stringify({ board: [] }), score: 2200, time_spent: 300, completed: true },
 
-        // Game 11 - Minesweeper
-        { id: uuidv4(), user_id: player3, game_id: 11, state: JSON.stringify({ board: [] }), score: 120, time_spent: 150, completed: true },
-        { id: uuidv4(), user_id: player4, game_id: 11, state: JSON.stringify({ board: [] }), score: 180, time_spent: 200, completed: true },
-        { id: uuidv4(), user_id: player6, game_id: 11, state: JSON.stringify({ board: [] }), score: 90, time_spent: 100, completed: true },
-        { id: uuidv4(), user_id: player7, game_id: 11, state: JSON.stringify({ board: [] }), score: 75, time_spent: 80, completed: true },
-
-        // Game 18 - 2048
+        // Game 18 - 2048 (3 sessions)
         { id: uuidv4(), user_id: player1, game_id: 18, state: JSON.stringify({ board: [] }), score: 8500, time_spent: 600, completed: true },
         { id: uuidv4(), user_id: player2, game_id: 18, state: JSON.stringify({ board: [] }), score: 12000, time_spent: 800, completed: true },
-        { id: uuidv4(), user_id: player4, game_id: 18, state: JSON.stringify({ board: [] }), score: 6500, time_spent: 500, completed: true },
         { id: uuidv4(), user_id: player5, game_id: 18, state: JSON.stringify({ board: [] }), score: 15000, time_spent: 900, completed: true },
-        { id: uuidv4(), user_id: player9, game_id: 18, state: JSON.stringify({ board: [] }), score: 10000, time_spent: 700, completed: true },
+
+        // Game 11 - Minesweeper (2 sessions)
+        { id: uuidv4(), user_id: player3, game_id: 11, state: JSON.stringify({ board: [] }), score: 120, time_spent: 150, completed: true },
+        { id: uuidv4(), user_id: player4, game_id: 11, state: JSON.stringify({ board: [] }), score: 180, time_spent: 200, completed: true },
     ];
     await knex('game_sessions').insert(sessions);
-    console.log('✅ Seeded 39 game sessions across all games');
+    console.log('✅ Seeded 51 game sessions (Caro5: 13, Snake: 9, TTT: 6, Match3: 5, Tetris: 5, Caro4: 4, Memory: 4, 2048: 3, Minesweeper: 2)');
 
     // ============ RATINGS (ratings cho tất cả games) ============
     await knex('ratings').del();
